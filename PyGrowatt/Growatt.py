@@ -455,8 +455,7 @@ class GrowattQueryRequest(GrowattRequest):
         return
 
     def execute(self, context):
-        return GrowattQueryResponse(self.wifi_serial)
-
+        context.setValues(self.function_code, self.config_id, [self.config_value])
 
 class GrowattBufferedEnergyResponse(GrowattResponse):
     function_code = 0x50

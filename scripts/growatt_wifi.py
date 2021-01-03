@@ -56,12 +56,13 @@ def run_server():
     # initialize the server information
     # ----------------------------------------------------------------------- #
     identity = ModbusDeviceIdentification()
-    identity.VendorName = 'Pymodbus'
-    identity.ProductCode = 'PM'
-    identity.VendorUrl = 'http://github.com/riptideio/pymodbus/'
-    identity.ProductName = 'Growatt Pymodbus Server'
+    identity.VendorName = 'PyGrowatt'
+    identity.ProductCode = 'PG'
+    identity.VendorUrl = 'https://github.com/aaronjbrown/PyGrowatt'
+    identity.ProductName = 'Python Growatt Server'
     identity.ModelName = 'Growatt Pymodbus Server'
     identity.MajorMinorRevision = '1.0.0'
+    identity.UserApplicationName = os.path.basename(__file__)
 
     # ----------------------------------------------------------------------- #
     # run the server

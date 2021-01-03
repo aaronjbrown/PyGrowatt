@@ -1,0 +1,8 @@
+[Growatt]
+KEY = Growatt
+UpdateInterval = 5
+
+[Pvoutput]
+Apikey = Your-API-Key
+SystemId = Your-System-Id
+StatusInterval = 5

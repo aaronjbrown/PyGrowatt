@@ -19,6 +19,12 @@ from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from PyGrowatt.Growatt import *
 from PyGrowatt.growatt_framer import GrowattV6Framer
 
+import threading
+import configparser as configparser
+import os
+import requests
+import time
+
 # --------------------------------------------------------------------------- #
 # configure the service logging
 # --------------------------------------------------------------------------- #
@@ -32,7 +38,99 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 
-def run_server():
+def pv_status_upload(datastore, interval):
+    """ Upload the status information to PVOutput.org throughout the day
+
+    :param datastore: the ModbusDataBlock that contains the data
+    """
+    energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
+    power_generated = datastore.getValues(4, inputRegisters["Ppv"], 1)[0] * 0.1
+
+    # Wait until we have data to upload
+    if energy_generated == 0 or power_generated == 0:
+        log.debug("No data to upload to PVOutput.org")
+    else:
+        headers = {
+            'X-Pvoutput-Apikey': config['Pvoutput']['Apikey'],
+            'X-Pvoutput-SystemId': config['Pvoutput']['SystemId'],
+        }
+
+        # Status Interval
+        data = {
+            'd': time.strftime('%Y%m%d'),   # Output Date
+            't': time.strftime('%H:%M'),    # Output Time
+            'v1': energy_generated,         # Energy Generation (watt hours)
+            'v2': power_generated,          # Power Generation (watts)
+            # 'v6': store.getValues(4, inputRegisters["Vpv1"], 1)[0] * 0.1, # Voltage (volts)
+            # 'c1': '2', # Cumulative Energy Flag
+            # 'n': '', # Net Flag
+        }
+        response = requests.post('https://pvoutput.org/service/r2/addstatus.jsp', headers=headers, data=data)
+
+        if response.status_code != 200:
+            log.error("Upload to PVOutput.org failed {}: {}".format(response.status_code, response.reason))
+        else:
+            log.info("Upload to PVOutput.org success! ({}Wh / {}W generated)".format(energy_generated, power_generated))
+
+        # We've consumed the energy data, so reset the store to prevent uploading duplicate data
+        datastore.store['i'].reset()
+
+    # Keep repeating
+    timer = threading.Timer(interval, pv_status_upload, args=(datastore, interval))
+    timer.start()
+
+    return
+
+
+def pv_output_upload(datastore):
+    """ Upload the end-of-day information to PVOutput.org
+
+    :param datastore: the ModbusDataBlock that contains the data
+    """
+    energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
+    power_exported = datastore.getValues(4, inputRegisters["Pac1"], 1)[0] * 0.1
+
+    headers = {
+        'X-Pvoutput-Apikey': config['Pvoutput']['Apikey'],
+        'X-Pvoutput-SystemId': config['Pvoutput']['SystemId'],
+    }
+
+    # End of day output information
+    data = {
+        'd': time.strftime('%Y%m%d'),   # Output Date
+        'g': energy_generated,          # Watt Hours Generated
+        'e': power_exported,            # Watt Hours Exported
+        # 'pp': '',   	               	# Peak Power
+        # 'pt': '',   	            	# Peak Time
+        # 'cm': '',  	            	# Comments
+        # 'ep': '',             		# Export Peak
+        # 'eo': '',              		# Export Off-Peak
+        # 'es': '',                		# Export Shoulder
+        # 'eh': '',                  	# Export High Shoulder
+    }
+    response = requests.post('https://pvoutput.org/service/r2/addoutput.jsp', headers=headers, data=data)
+
+    if response.status_code != 200:
+        log.error("Upload to PVOutput.org failed: {}".format(response.reason))
+    else:
+        log.debug("Upload to PVOutput.org returned {}: {}".format(response.status_code, response.reason))
+
+    # Keep repeating
+    timer = threading.Timer(24 * 60 * 60,  # once per day
+                            pv_output_upload,
+                            args=datastore)
+    timer.start()
+
+    return
+
+
+if __name__ == "__main__":
+    # ----------------------------------------------------------------------- #
+    # load the config from file
+    # ----------------------------------------------------------------------- #
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
     # ----------------------------------------------------------------------- #
     # initialize the data store
     # The Holding Register is used for config data
@@ -65,24 +163,35 @@ def run_server():
     identity.UserApplicationName = os.path.basename(__file__)
 
     # ----------------------------------------------------------------------- #
-    # run the server
+    # start the server in a separate thread so it doesn't block this thread
+    # from uploading to PVOutput.org
     # ----------------------------------------------------------------------- #
-    StartTcpServer(context,
-                   identity=identity,
-                   framer=GrowattV6Framer,
-                   custom_functions=[GrowattAnnounceRequest,
-                                     GrowattEnergyRequest,
-                                     GrowattPingRequest,
-                                     GrowattConfigRequest,
-                                     GrowattQueryRequest,
-                                     GrowattBufferedEnergyRequest,
-                                     ],
-                   address=("", 5279),
-                   allow_reuse_address=True)
+    server_thread = threading.Thread(target=StartTcpServer,
+                                     name="ServerThread",
+                                     kwargs={"context": context,
+                                             "identity": identity,
+                                             "address": ("", 5279),
+                                             "defer_reactor_run": False,
+                                             "custom_functions": [GrowattAnnounceRequest,
+                                                                  GrowattEnergyRequest,
+                                                                  GrowattPingRequest,
+                                                                  GrowattConfigRequest,
+                                                                  GrowattQueryRequest,
+                                                                  GrowattBufferedEnergyRequest,
+                                                                  ],
+                                             "framer": GrowattV6Framer,
+                                             "allow_reuse_address": True,
+                                             },
+                                     )
+    server_thread.setDaemon(True)
+    server_thread.start()
 
-    return
+    # ----------------------------------------------------------------------- #
+    # periodically upload the data to pvoutput.org
+    # ----------------------------------------------------------------------- #
+    pv_status_upload(store, int(config['Pvoutput']['StatusInterval']) * 60)
 
-
-if __name__ == "__main__":
-    # Start the server for the Wifi dongle to connect
-    run_server()
+    # ----------------------------------------------------------------------- #
+    # TODO: at the end of the day, upload the summary data to pvoutput.org
+    # ----------------------------------------------------------------------- #
+    # pv_output_upload(store)

@@ -400,21 +400,20 @@ class GrowattConfigRequest(GrowattRequest):
 class GrowattQueryResponse(GrowattResponse):
     function_code = 0x19
 
-    def __init__(self, wifi_serial=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.firstConfig = 0
-        self.lastConfig = 0
+        self.wifi_serial = kwargs.get("wifi_serial", [])
+        self.first_config = kwargs.get("first_config", 0)
+        self.last_config = kwargs.get("last_config", 0)
 
     def encode(self):
         """ Encodes response pdu
 
-        ACK messages are a 0x00 byte, Version 6 of the protocol XORs the
-        payload therefore returns 0x47.
-
-        :returns: Payload to ACK the message
+        :returns: The packet data to send
         """
-        return struct.pack('B', 0x47)
+        data = struct.pack(">30sHH", self.wifi_serial, self.first_config, self.last_config)
+        data = xor(data, KEY)
+        return data
 
     def decode(self, data):
         """ Decodes response pdu
@@ -427,7 +426,7 @@ class GrowattQueryResponse(GrowattResponse):
         # Decrypt the data
         data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from(">10s", data, 0)[0]
-        self.firstConfig, self.lastConfig = struct.unpack_from(">2H", data, 30)
+        self.first_config, self.last_config = struct.unpack_from(">2H", data, 30)
 
 
 class GrowattQueryRequest(GrowattRequest):

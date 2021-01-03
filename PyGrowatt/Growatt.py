@@ -393,11 +393,7 @@ class GrowattConfigRequest(GrowattRequest):
         return
 
     def execute(self, context):
-        # TODO: setValues using self.function_code rather than hard-coded 23 (0x17)
-        #       This will require extending pymodbus/interfaces.py IModbusSlaveContext to map
-        #       handled function_code values to 'h' (holiding)
-        context.setValues(23, self.configID, self.configValue)
-        return GrowattConfigResponse(self.wifi_serial)
+        context.setValues(self.function_code, self.configID, self.configValue)
 
 
 class GrowattQueryResponse(GrowattResponse):

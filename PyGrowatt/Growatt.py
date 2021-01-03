@@ -298,7 +298,6 @@ class GrowattPingResponse(GrowattResponse):
         :returns: The encoded packet message
         """
         data = xor(self.wifi_serial + self.padding, KEY)
-        log.debug("Ping Response: %s", hexlify_packets(data))
         return struct.pack('>' + str(len(data)) + 's', data)
 
     def decode(self, data):
@@ -385,11 +384,9 @@ class GrowattConfigRequest(GrowattRequest):
     def decode(self, data):
         # Decrypt the data
         data = xor(data, KEY)
-        log.debug("Config: %s", hexlify_packets(data))
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
         self.configID, self.configLength = struct.unpack_from('>2H', data, 30)
         self.configValue = struct.unpack_from('>' + str(self.configLength) + 's', data, 34)[0]
-        log.info("GrowattConfigRequest from '%s': '%s'", self.wifi_serial, self.configValue)
         return
 
     def execute(self, context):

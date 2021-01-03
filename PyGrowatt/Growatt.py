@@ -330,6 +330,12 @@ class GrowattPingRequest(GrowattRequest):
         return
 
     def execute(self, context):
+        # If we haven't received the date/time, request all config values.
+        inverter_date = context.getValues(0x19, 0x1F)[0]
+        if inverter_date == 0:
+            # This will not send an ACK for the Ping, but that shouldn't cause any issues
+            return GrowattQueryResponse(wifi_serial=self.wifi_serial, first_config=0x01, last_config=0x1F)
+
         return GrowattPingResponse(self.wifi_serial, self.padding)
 
 

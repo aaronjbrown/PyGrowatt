@@ -35,9 +35,21 @@ log.setLevel(logging.DEBUG)
 def run_server():
     # ----------------------------------------------------------------------- #
     # initialize the data store
+    # The Holding Register is used for config data
+    # The Input Register is used for 'live' energy data
+    # The BufferedEnergy (0x50) will be stored in a "Buffered Input Register"
     # ----------------------------------------------------------------------- #
-    block = ModbusSparseDataBlock([0] * 100)
-    store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block, zero_mode=True)
+
+    input_register = ModbusSparseDataBlock([0] * 100)
+    holding_register = ModbusSparseDataBlock([0] * 100)
+    buffered_input_register = ModbusSparseDataBlock([0] * 100)
+    store = ModbusSlaveContext(hr=holding_register,
+                               ir=input_register,
+                               zero_mode=True)
+    store.register(0x18, 'h', holding_register)
+    store.register(0x19, 'h', holding_register)
+    store.register(0x50, 'bi', buffered_input_register)
+
     context = ModbusServerContext(slaves=store, single=True)
 
     # ----------------------------------------------------------------------- #

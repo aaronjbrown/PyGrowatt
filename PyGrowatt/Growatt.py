@@ -432,12 +432,13 @@ class GrowattQueryResponse(GrowattResponse):
 class GrowattQueryRequest(GrowattRequest):
     function_code = 0x19
 
-    def __init__(self, wifi_serial=None, config=None, size=None, padding=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.config = config or {}
-        self.size = size or []
-        self.padding = padding or []
+        self.wifi_serial = kwargs.get("wifi_serial", [])
+        self.padding = kwargs.get("padding", [])
+        self.config_id = kwargs.get("config_id", 0)
+        self.config_value = kwargs.get("config_value", '')
+        self.config_length = kwargs.get("config_length", '')
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")
@@ -446,15 +447,9 @@ class GrowattQueryRequest(GrowattRequest):
     def decode(self, data):
         # Decrypt the data
         data = xor(data, KEY)
-        self.wifi_serial, self.padding, configID, configLength, configValue = struct.unpack(
-            '>10s20sHH' + str(len(data) - 10 - 20 - 2 - 2) + 's', data)
-        try:
-            self.config[configID] = configValue
-            log.debug("GrowattQueryRequest from %s: Set config '%s'='%s'", self.wifi_serial,
-                      configDescription[configID],
-                      str(configValue))
-        except (IndexError, KeyError):
-            log.debug("GrowattQueryRequest invalid configID: %s", hex(configID))
+        self.wifi_serial, self.padding, self.config_id, self.config_length = struct.unpack_from(
+            '>10s20sHH', data)
+        self.config_value = struct.unpack_from(">" + str(self.config_length) + "s", data, 34)[0]
         return
 
     def execute(self, context):

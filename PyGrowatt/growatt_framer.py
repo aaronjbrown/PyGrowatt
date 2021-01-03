@@ -4,6 +4,12 @@ from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.utilities import computeCRC, hexlify_packets
 
+# --------------------------------------------------------------------------- #
+# Logging
+# --------------------------------------------------------------------------- #
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class GrowattV6Framer(ModbusSocketFramer):
     """ Growatt Modbus Socket Frame controller

@@ -4,13 +4,16 @@
 import logging
 import struct
 
+import configparser
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 from pymodbus.utilities import hexlify_packets
 
 log = logging.getLogger()
 
-# TODO: Move to config file
-KEY = "Growatt"
+# Get the decryption key from the config file
+config = configparser.ConfigParser()
+config.read("../scripts/config.ini")
+KEY = config['Growatt']['KEY']
 
 
 def xor(data, key):

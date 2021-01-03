@@ -30,12 +30,11 @@ import time
 # --------------------------------------------------------------------------- #
 import logging
 
-
 FORMAT = ('%(asctime)-15s %(levelname)-8s'
           ' %(module)s:%(funcName)s(%(lineno)s) %(message)s')
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 
 def pv_status_upload(datastore, interval):

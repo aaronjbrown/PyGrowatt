@@ -334,18 +334,26 @@ class GrowattPingRequest(GrowattRequest):
 class GrowattConfigResponse(GrowattResponse):
     function_code = 0x18
 
-    def __init__(self, wifi_serial=None, padding=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.padding = padding or []
+        self.wifi_serial = kwargs.get("wifi_serial", [])
+        self.padding = kwargs.get("padding", [])
+        self.config_id = kwargs.get("config_id", 0)
+        self.config_value = kwargs.get("config_value", '')
+        self.config_length = kwargs.get("config_length", len(self.config_value))
 
     def encode(self):
         """ Encodes response pdu
 
         :returns: The encoded packet message
         """
-        data = xor(self.wifi_serial + self.padding, KEY)
-        return struct.pack('>' + str(len(data)) + 's', data)
+        data = struct.pack(">30sHH" + str(self.config_length) + "s",
+                           self.wifi_serial,
+                           self.config_id,
+                           self.config_length,
+                           self.config_value)
+        data = xor(data, KEY)
+        return data
 
     def decode(self, data):
         """ Decodes response pdu

@@ -572,21 +572,17 @@ Epv2_today: %.1f, Epv2_total: %.1f ",
         :param context: The IModbusSlaveContext to store the data
         :return: A GrowattBufferedEnergyResponse to send back to the client
         """
-
-        # TODO: setValues using self.function_code rather than hard-coded 4 (0x04)
-        #       This will require extending pymodbus/interfaces.py IModbusSlaveContext to map
-        #       fx value 80 (0x50) to "i"
-        context.setValues(4, inputRegisters["Ppv"], [self.Ppv])
-        context.setValues(4, inputRegisters["Vpv1"], [self.Vpv1, self.Ipv1, self.Ppv1])
-        context.setValues(4, inputRegisters["Vpv2"], [self.Vpv2, self.Ipv2, self.Ppv2])
-        context.setValues(4, inputRegisters["Pac"], [self.Pac])
-        context.setValues(4, inputRegisters["Fac"], [self.Fac])
-        context.setValues(4, inputRegisters["Vac1"], [self.Vac1, self.Iac1, self.Pac1])
-        context.setValues(4, inputRegisters["Eac_today"], [self.Eac_today])
-        context.setValues(4, inputRegisters["Eac_total"], [self.Eac_total])
-        context.setValues(4, inputRegisters["Epv1_today"], [self.Epv1_today])
-        context.setValues(4, inputRegisters["Epv1_total"], [self.Epv1_total])
-        context.setValues(4, inputRegisters["Epv2_today"], [self.Epv2_today])
-        context.setValues(4, inputRegisters["Epv2_total"], [self.Epv2_total])
+        context.setValues(self.function_code, inputRegisters["Ppv"], [self.Ppv])
+        context.setValues(self.function_code, inputRegisters["Vpv1"], [self.Vpv1, self.Ipv1, self.Ppv1])
+        context.setValues(self.function_code, inputRegisters["Vpv2"], [self.Vpv2, self.Ipv2, self.Ppv2])
+        context.setValues(self.function_code, inputRegisters["Pac"], [self.Pac])
+        context.setValues(self.function_code, inputRegisters["Fac"], [self.Fac])
+        context.setValues(self.function_code, inputRegisters["Vac1"], [self.Vac1, self.Iac1, self.Pac1])
+        context.setValues(self.function_code, inputRegisters["Eac_today"], [self.Eac_today])
+        context.setValues(self.function_code, inputRegisters["Eac_total"], [self.Eac_total])
+        context.setValues(self.function_code, inputRegisters["Epv1_today"], [self.Epv1_today])
+        context.setValues(self.function_code, inputRegisters["Epv1_total"], [self.Epv1_total])
+        context.setValues(self.function_code, inputRegisters["Epv2_today"], [self.Epv2_today])
+        context.setValues(self.function_code, inputRegisters["Epv2_total"], [self.Epv2_total])
 
         return GrowattBufferedEnergyResponse(self.wifi_serial)

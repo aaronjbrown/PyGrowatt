@@ -2,7 +2,7 @@ import struct
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer.socket_framer import ModbusSocketFramer
-from pymodbus.utilities import computeCRC, hexlify_packets
+from pymodbus.utilities import computeCRC, hexlify_packets, checkCRC
 
 # --------------------------------------------------------------------------- #
 # Logging
@@ -36,9 +36,6 @@ class GrowattV6Framer(ModbusSocketFramer):
 
         * length = uid + function code + data + checksum
         * The -1 is to account for the uid byte
-
-        TODO: Implement the CRC properly (i.e. process the CRC when
-              receiving a frame as in RTU and Binary framers.
     """
 
     def __init__(self, decoder, client=None):
@@ -66,6 +63,31 @@ class GrowattV6Framer(ModbusSocketFramer):
             self.populateResult(result)
             self.advanceFrame()
             callback(result)  # defer or push to a thread?
+
+    def checkFrame(self):
+        """
+        Check and decode the next frame Return true if we were successful
+        """
+        if self.isFrameReady():
+            (self._header['tid'], self._header['pid'],
+             self._header['len'], self._header['uid']) = struct.unpack(
+                '>HHHB', self._buffer[0:self._hsize])
+            data = self._buffer[:-2]
+            # Swap byte order for CRC. Not sure why the computeCRC function swaps the two bytes, but it does. To work
+            # around this, we will just unpack the CRC as little-endian
+            crc = struct.unpack("<H", self._buffer[-2:])[0]
+            if not checkCRC(data, crc):
+                _logger.debug("CRC invalid, discarding packet!!")
+                return False
+
+            # someone sent us an error? ignore it
+            if self._header['len'] < 2:
+                self.advanceFrame()
+            # we have at least a complete message, continue
+            elif len(self._buffer) - self._hsize + 1 >= self._header['len']:
+                return True
+        # we don't have enough of a message yet, wait
+        return False
 
     def buildPacket(self, message):
         """ Creates a ready to send modbus packet

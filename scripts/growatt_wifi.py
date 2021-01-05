@@ -81,48 +81,6 @@ def pv_status_upload(datastore, interval):
     return
 
 
-def pv_output_upload(datastore):
-    """ Upload the end-of-day information to PVOutput.org
-
-    :param datastore: the ModbusDataBlock that contains the data
-    """
-    energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
-    power_exported = datastore.getValues(4, inputRegisters["Pac1"], 1)[0] * 0.1
-
-    headers = {
-        'X-Pvoutput-Apikey': config['Pvoutput']['Apikey'],
-        'X-Pvoutput-SystemId': config['Pvoutput']['SystemId'],
-    }
-
-    # End of day output information
-    data = {
-        'd': time.strftime('%Y%m%d'),   # Output Date
-        'g': energy_generated,          # Watt Hours Generated
-        'e': power_exported,            # Watt Hours Exported
-        # 'pp': '',   	               	# Peak Power
-        # 'pt': '',   	            	# Peak Time
-        # 'cm': '',  	            	# Comments
-        # 'ep': '',             		# Export Peak
-        # 'eo': '',              		# Export Off-Peak
-        # 'es': '',                		# Export Shoulder
-        # 'eh': '',                  	# Export High Shoulder
-    }
-    response = requests.post('https://pvoutput.org/service/r2/addoutput.jsp', headers=headers, data=data)
-
-    if response.status_code != 200:
-        log.error("Upload to PVOutput.org failed: {}".format(response.reason))
-    else:
-        log.debug("Upload to PVOutput.org returned {}: {}".format(response.status_code, response.reason))
-
-    # Keep repeating
-    timer = threading.Timer(24 * 60 * 60,  # once per day
-                            pv_output_upload,
-                            args=datastore)
-    timer.start()
-
-    return
-
-
 if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # load the config from file
@@ -189,8 +147,3 @@ if __name__ == "__main__":
     # periodically upload the data to pvoutput.org
     # ----------------------------------------------------------------------- #
     pv_status_upload(store, int(config['Pvoutput']['StatusInterval']) * 60)
-
-    # ----------------------------------------------------------------------- #
-    # TODO: at the end of the day, upload the summary data to pvoutput.org
-    # ----------------------------------------------------------------------- #
-    # pv_output_upload(store)

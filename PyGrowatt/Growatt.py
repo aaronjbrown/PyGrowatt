@@ -380,7 +380,7 @@ class GrowattConfigRequest(GrowattRequest):
         self.wifi_serial = wifi_serial or []
         self.configID = 0
         self.configLength = 0
-        self.configValue = []
+        self.configValue = ''
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")
@@ -391,8 +391,13 @@ class GrowattConfigRequest(GrowattRequest):
         # Decrypt the data
         data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
-        self.configID, self.configLength = struct.unpack_from('>2H', data, 30)
-        self.configValue = struct.unpack_from('>' + str(self.configLength) + 's', data, 34)[0]
+        self.configID = struct.unpack_from('>H', data, 30)[0]
+
+        # An ACK will have a single 0x00 byte after the configID, otherwise it has the length and value
+        if len(data) > 34:
+            self.configLength = struct.unpack_from('>H', data, 32)[0]
+            self.configValue = struct.unpack_from('>' + str(self.configLength) + 's', data, 34)[0]
+
         return
 
     def execute(self, context):

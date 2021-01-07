@@ -72,7 +72,12 @@ def pv_status_upload(datastore, interval):
             log.info("Upload to PVOutput.org success! ({}Wh / {}W generated)".format(energy_generated, power_generated))
 
         # We've consumed the energy data, so reset the store to prevent uploading duplicate data
-        datastore.store['i'].reset()
+        if time.strftime("%H") == "00":
+            # If it's midnight, reset the whole datastore
+            datastore.reset()
+        else:
+            # It's daytime, so only reset the Input Registers
+            datastore.store['i'].reset()
 
     # Keep repeating
     timer = threading.Timer(interval, pv_status_upload, args=(datastore, interval))
@@ -94,7 +99,6 @@ if __name__ == "__main__":
     # The Input Register is used for 'live' energy data
     # The BufferedEnergy (0x50) will be stored in a "Buffered Input Register"
     # ----------------------------------------------------------------------- #
-
     input_register = ModbusSparseDataBlock([0] * 100)
     holding_register = ModbusSparseDataBlock([0] * 100)
     buffered_input_register = ModbusSparseDataBlock([0] * 100)

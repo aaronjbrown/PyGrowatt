@@ -92,11 +92,10 @@ class GrowattRequest(ModbusRequest):
 class GrowattAnnounceResponse(GrowattResponse):
     function_code = 0x03
 
-    def __init__(self, wifi_serial=None, inverter_serial=None, padding=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.inverter_serial = inverter_serial or []
-        self.padding = padding or []
+        self.wifi_serial = kwargs.get('wifi_serial', [])
+        self.inverter_serial = kwargs.get('inverter_serial', [])
 
     def encode(self):
         """ ACK the Announce Request
@@ -122,12 +121,11 @@ class GrowattAnnounceRequest(GrowattRequest):
     """ Read holding register
     """
 
-    def __init__(self, wifi_serial=None, device_serial=None, device_type=None, padding=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.device_serial = device_serial or []
-        self.padding = padding or []
-        self.device_type = device_type or []
+        self.wifi_serial = kwargs.get('wifi_serial', [])
+        self.device_serial = kwargs.get('device_serial', [])
+        self.device_type = kwargs.get('device_type', [])
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")
@@ -149,7 +147,7 @@ class GrowattAnnounceRequest(GrowattRequest):
         return
 
     def execute(self, context):
-        return GrowattAnnounceResponse(self.wifi_serial, self.padding)
+        return GrowattAnnounceResponse(wifi_serial=self.wifi_serial)
 
 
 class GrowattEnergyResponse(GrowattResponse):
@@ -287,18 +285,17 @@ Epv2_today: %.1f, Epv2_total: %.1f ",
 class GrowattPingResponse(GrowattResponse):
     function_code = 0x16
 
-    def __init__(self, wifi_serial=None, padding=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.padding = padding or []
+        self.wifi_serial = kwargs.get('wifi_serial', [])
 
     def encode(self):
         """ Encodes response pdu
 
         :returns: The encoded packet message
         """
-        data = xor(self.wifi_serial + self.padding, KEY)
-        return struct.pack('>' + str(len(data)) + 's', data)
+        data = struct.pack(">30s", self.wifi_serial)
+        return xor(data, KEY)
 
     def decode(self, data):
         """ Decodes response pdu
@@ -312,10 +309,9 @@ class GrowattPingResponse(GrowattResponse):
 class GrowattPingRequest(GrowattRequest):
     function_code = 0x16
 
-    def __init__(self, wifi_serial=None, padding=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.padding = padding or []
+        self.wifi_serial = kwargs.get('wifi_serial', [])
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")
@@ -325,7 +321,7 @@ class GrowattPingRequest(GrowattRequest):
     def decode(self, data):
         # Decrypt the data
         data = xor(data, KEY)
-        self.wifi_serial, self.padding = struct.unpack('>10s' + str(len(data) - 10) + 's', data)
+        self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
         log.debug("GrowattPingRequest from '%s'", self.wifi_serial)
         return
 
@@ -336,7 +332,7 @@ class GrowattPingRequest(GrowattRequest):
             # This will not send an ACK for the Ping, but that shouldn't cause any issues
             return GrowattQueryResponse(wifi_serial=self.wifi_serial, first_config=0x01, last_config=0x1F)
 
-        return GrowattPingResponse(self.wifi_serial, self.padding)
+        return GrowattPingResponse(wifi_serial=self.wifi_serial)
 
 
 class GrowattConfigResponse(GrowattResponse):
@@ -345,7 +341,6 @@ class GrowattConfigResponse(GrowattResponse):
     def __init__(self, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
-        self.padding = kwargs.get("padding", [])
         self.config_id = kwargs.get("config_id", 0)
         self.config_value = kwargs.get("config_value", '')
         self.config_length = kwargs.get("config_length", len(self.config_value))
@@ -375,12 +370,12 @@ class GrowattConfigResponse(GrowattResponse):
 class GrowattConfigRequest(GrowattRequest):
     function_code = 0x18
 
-    def __init__(self, wifi_serial=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
-        self.configID = 0
-        self.configLength = 0
-        self.configValue = ''
+        self.wifi_serial = kwargs.get("wifi_serial", [])
+        self.config_id = kwargs.get("config_id", 0)
+        self.config_value = kwargs.get("config_value", '')
+        self.config_length = kwargs.get("config_length", len(self.config_value))
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")
@@ -391,17 +386,17 @@ class GrowattConfigRequest(GrowattRequest):
         # Decrypt the data
         data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
-        self.configID = struct.unpack_from('>H', data, 30)[0]
+        self.config_id = struct.unpack_from('>H', data, 30)[0]
 
         # An ACK will have a single 0x00 byte after the configID, otherwise it has the length and value
         if len(data) > 34:
-            self.configLength = struct.unpack_from('>H', data, 32)[0]
-            self.configValue = struct.unpack_from('>' + str(self.configLength) + 's', data, 34)[0]
+            self.config_length = struct.unpack_from('>H', data, 32)[0]
+            self.config_value = struct.unpack_from('>' + str(self.config_length) + 's', data, 34)[0]
 
         return
 
     def execute(self, context):
-        context.setValues(self.function_code, self.configID, self.configValue)
+        context.setValues(self.function_code, self.config_id, self.config_value)
 
 
 class GrowattQueryResponse(GrowattResponse):
@@ -442,7 +437,6 @@ class GrowattQueryRequest(GrowattRequest):
     def __init__(self, **kwargs):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
-        self.padding = kwargs.get("padding", [])
         self.config_id = kwargs.get("config_id", 0)
         self.config_value = kwargs.get("config_value", '')
         self.config_length = kwargs.get("config_length", '')
@@ -454,8 +448,8 @@ class GrowattQueryRequest(GrowattRequest):
     def decode(self, data):
         # Decrypt the data
         data = xor(data, KEY)
-        self.wifi_serial, self.padding, self.config_id, self.config_length = struct.unpack_from(
-            '>10s20sHH', data)
+        self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
+        self.config_id, self.config_length = struct.unpack_from('>HH', data, 30)
         self.config_value = struct.unpack_from(">" + str(self.config_length) + "s", data, 34)[0]
         return
 
@@ -467,7 +461,7 @@ class GrowattBufferedEnergyResponse(GrowattResponse):
 
     def __init__(self, wifi_serial=None, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = wifi_serial or []
+        self.wifi_serial = kwargs.get('wifi_serial', [])
 
     def encode(self):
         """ ACK the Buffered Energy message
@@ -591,4 +585,4 @@ Epv2_today: %.1f, Epv2_total: %.1f ",
         context.setValues(self.function_code, inputRegisters["Epv2_today"], [self.Epv2_today])
         context.setValues(self.function_code, inputRegisters["Epv2_total"], [self.Epv2_total])
 
-        return GrowattBufferedEnergyResponse(self.wifi_serial)
+        return GrowattBufferedEnergyResponse(wifi_serial=self.wifi_serial)

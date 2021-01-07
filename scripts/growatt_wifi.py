@@ -46,7 +46,7 @@ def pv_status_upload(datastore, interval):
     power_generated = datastore.getValues(4, inputRegisters["Ppv"], 1)[0] * 0.1
 
     # Wait until we have data to upload
-    if energy_generated == 0 or power_generated == 0:
+    if energy_generated == 0 and power_generated == 0:
         log.debug("No data to upload to PVOutput.org")
     else:
         headers = {

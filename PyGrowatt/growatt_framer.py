@@ -89,6 +89,18 @@ class GrowattV6Framer(ModbusSocketFramer):
         # we don't have enough of a message yet, wait
         return False
 
+    def advanceFrame(self):
+        """ Skip over the current framed message
+        This allows us to skip over the current message after we have processed
+        it or determined that it contains an error. It also has to reset the
+        current frame header handle
+        """
+        # Override the ModbusSocketFramer method to account for the extra two bytes per frame due to the CRC.
+        # Instead of being "-1" to account for double-counting the uid in the header, we "-1+2", or simply "+1" byte.
+        length = self._hsize + self._header['len'] + 1
+        self._buffer = self._buffer[length:]
+        self._header = {'tid': 0, 'pid': 0, 'len': 0, 'uid': 0}
+
     def buildPacket(self, message):
         """ Creates a ready to send modbus packet
 

@@ -487,34 +487,34 @@ class GrowattBufferedEnergyRequest(GrowattRequest):
 
     def __init__(self, **kwargs):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
-        self.wifi_serial = []
-        self.inverter_serial = []
-        self.year = 0
-        self.month = 0
-        self.day = 0
-        self.hour = 0
-        self.min = 0
-        self.sec = 0
-        self.inverter_status = 0
-        self.Ppv = 0
-        self.Vpv1 = 0
-        self.Ipv1 = 0
-        self.Ppv1 = 0
-        self.Vpv2 = 0
-        self.Ipv2 = 0
-        self.Ppv2 = 0
-        self.Pac = 0
-        self.Fac = 0
-        self.Vac1 = 0
-        self.Iac1 = 0
-        self.Pac1 = 0
-        self.Vac_RS = 0
-        self.Eac_today = 0
-        self.Eac_total = 0
-        self.Epv1_today = 0
-        self.Epv1_total = 0
-        self.Epv2_today = 0
-        self.Epv2_total = 0
+        self.wifi_serial = kwargs.get("wifi_serial", [])
+        self.inverter_serial = kwargs.get("inverter_serial", [])
+        self.year = kwargs.get("year", 0)
+        self.month = kwargs.get("month", 0)
+        self.day = kwargs.get("day", 0)
+        self.hour = kwargs.get("hour", 0)
+        self.min = kwargs.get("min", 0)
+        self.sec = kwargs.get("sec", 0)
+        self.inverter_status = kwargs.get("inverter_status", 0)
+        self.Ppv = kwargs.get("Ppv", 0)
+        self.Vpv1 = kwargs.get("Vpv1", 0)
+        self.Ipv1 = kwargs.get("Ipv1", 0)
+        self.Ppv1 = kwargs.get("Ppv1", 0)
+        self.Vpv2 = kwargs.get("Vpv2", 0)
+        self.Ipv2 = kwargs.get("Ipv2", 0)
+        self.Ppv2 = kwargs.get("Ppv2", 0)
+        self.Pac = kwargs.get("Pac", 0)
+        self.Fac = kwargs.get("Fac", 0)
+        self.Vac1 = kwargs.get("Vac1", 0)
+        self.Iac1 = kwargs.get("Iac1", 0)
+        self.Pac1 = kwargs.get("Pac1", 0)
+        self.Vac_RS = kwargs.get("Vac_RS", 0)
+        self.Eac_today = kwargs.get("Eac_today", 0)
+        self.Eac_total = kwargs.get("Eac_total", 0)
+        self.Epv1_today = kwargs.get("Epv1_today", 0)
+        self.Epv1_total = kwargs.get("Epv1_total", 0)
+        self.Epv2_today = kwargs.get("Epv2_today", 0)
+        self.Epv2_total = kwargs.get("Epv2_total", 0)
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")

@@ -527,6 +527,12 @@ class GrowattQueryRequest(GrowattRequest):
     def execute(self, context):
         context.setValues(self.function_code, self.config_id, [self.config_value])
 
+        # Set Update Interval to the value specified in the config file
+        if self.config_id == 0x04:
+            update_interval = str(config['Growatt']['UpdateInterval'])
+            if self.config_value != update_interval:
+                return GrowattConfigResponse(wifi_serial=self.wifi_serial, config_id=0x04, config_value=update_interval)
+
         return GrowattQueryResponse(wifi_serial=self.wifi_serial, first_config=self.config_id)
 
 

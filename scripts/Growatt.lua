@@ -281,6 +281,10 @@ function dissect_energy(buffer, pinfo, tree)
 end
 
 function dissect_announce(buffer, pinfo, tree)
+  if buffer:len() == 1 then
+    tree:add(buffer(0, 1), "Value:", "ACK")
+    return
+  end
   tree:add(wifi_serial, buffer(0, 30), buffer(0, 30):string())
   tree:add(device_serial, buffer(30, 30), buffer(30, 30):string())
 

@@ -277,10 +277,10 @@ class TestGrowattQueryResponse(TestCase):
 class TestGrowattConfigRequest(TestCase):
     def test_decode(self):
         data = binascii.unhexlify(
-            "06302c4625464773472a7761747447726f7761747447726f7761747447726f6861674677405f5a50465976404f47504e4474485f44")  # 06302c4625464773472a
+            "06302c4625464773472a7761747447726f7761747447726f7761747447726f6861674677405f5a50465976404f47504e4474485f44")
         request = Growatt.GrowattConfigRequest()
         request.decode(data)
-        self.assertEqual(request.wifi_serial, 'ABC1D2345E')  # ABC1D2345E
+        self.assertEqual(request.wifi_serial, 'ABC1D2345E')
         self.assertEqual(request.config_id, 0x1F)
         self.assertEqual(request.config_length, 19)
         self.assertEqual(request.config_value, '2020-12-12 01:03:03')

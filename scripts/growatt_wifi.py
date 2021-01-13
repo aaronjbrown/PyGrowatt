@@ -43,7 +43,7 @@ def pv_status_upload(datastore, interval):
     :param datastore: the ModbusDataBlock that contains the data
     """
     energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
-    power_generated = datastore.getValues(4, inputRegisters["Ppv"], 1)[0] * 0.1
+    power_generated = datastore.getValues(4, inputRegisters["Pac"], 1)[0] * 0.1
 
     # Wait until we have data to upload
     if energy_generated == 0 and power_generated == 0:

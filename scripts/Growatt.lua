@@ -51,7 +51,7 @@ data     = ProtoField.bytes("growatt.data", "Data", base.NONE)
 checksum = ProtoField.uint8("growatt.checksum", "Check Sum", base.HEX)
 
 wifi_serial   = ProtoField.string("growatt.wifi_serial", "WiFi Serial")
-device_serial = ProtoField.string("growatt.device_serial", "WiFi Serial")
+device_serial = ProtoField.string("growatt.device_serial", "Device Serial")
 
 config_id     = ProtoField.uint16("growatt.config.id", "Config ID", base.HEX, config_id_types)
 config_length = ProtoField.uint16("growatt.config.length", "Config Length", base.DEC)

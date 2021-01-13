@@ -470,14 +470,21 @@ class GrowattQueryResponse(GrowattResponse):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
         self.first_config = kwargs.get("first_config", 0)
-        self.last_config = kwargs.get("last_config", 0)
+        self.last_config = kwargs.get("last_config", None)
 
     def encode(self):
         """ Encodes response pdu
 
         :returns: The packet data to send
         """
-        data = struct.pack(">30sHH", self.wifi_serial, self.first_config, self.last_config)
+        data = struct.pack(">30sH", self.wifi_serial, self.first_config)
+
+        # If this is an ACK, send a 0x00 payload
+        if self.last_config is None:
+            data += struct.pack("x")
+        else:
+            data += struct.pack(">H", self.last_config)
+
         data = xor(data, KEY)
         return data
 
@@ -519,6 +526,9 @@ class GrowattQueryRequest(GrowattRequest):
 
     def execute(self, context):
         context.setValues(self.function_code, self.config_id, [self.config_value])
+
+        return GrowattQueryResponse(wifi_serial=self.wifi_serial, first_config=self.config_id)
+
 
 class GrowattBufferedEnergyResponse(GrowattResponse):
     function_code = 0x50

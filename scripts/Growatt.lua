@@ -236,7 +236,7 @@ function dissect_energy(buffer, pinfo, tree)
 
 
     local epv_total = buffer(177, 4):uint()/10
-    tree:add(buffer(177, 4), "Total2:", epv_total, "kWH")
+    tree:add(buffer(177, 4), "Epv Total:", epv_total, "kWH")
 
     local epv1_tree = tree:add(buffer(181, 8), "Epv1")
     local epv1_today = buffer(181, 4):uint()/10

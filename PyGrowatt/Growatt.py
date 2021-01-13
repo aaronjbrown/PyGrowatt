@@ -71,7 +71,8 @@ inputRegisters = {
     "Pac1": 16,
     # "Vac_RS": ,
     "Eac_today": 26,
-    "Eac_total": 28,
+    "Eac_total": 27,
+    "Epv_total": 28,
     "Epv1_today": 48,
     "Epv1_total": 50,
     "Epv2_today": 52,
@@ -204,6 +205,7 @@ class GrowattEnergyRequest(GrowattRequest):
         self.Vac_RS = 0
         self.Eac_today = 0
         self.Eac_total = 0
+        self.Epv_total = 0
         self.Epv1_today = 0
         self.Epv1_total = 0
         self.Epv2_today = 0
@@ -229,8 +231,7 @@ class GrowattEnergyRequest(GrowattRequest):
             self.Pac, self.Fac = struct.unpack_from(">IH", data, 117)
             self.Vac1, self.Iac1, self.Pac1 = struct.unpack_from(">HHI", data, 123)
             self.Vac_RS = struct.unpack_from(">H", data, 147)[0]
-            self.Eac_today = struct.unpack_from(">I", data, 169)[0]
-            self.Eac_total = struct.unpack_from(">I", data, 177)[0]
+            self.Eac_today, self.Eac_total, self.Epv_total = struct.unpack_from(">3I", data, 169)
             self.Epv1_today, self.Epv1_total = struct.unpack_from(">II", data, 181)
             self.Epv2_today, self.Epv2_total = struct.unpack_from(">II", data, 189)
 
@@ -274,6 +275,7 @@ Epv2_today: %.1f, Epv2_total: %.1f ",
         context.setValues(self.function_code, inputRegisters["Vac1"], [self.Vac1, self.Iac1, self.Pac1])
         context.setValues(self.function_code, inputRegisters["Eac_today"], [self.Eac_today])
         context.setValues(self.function_code, inputRegisters["Eac_total"], [self.Eac_total])
+        context.setValues(self.function_code, inputRegisters["Epv_total"], [self.Epv_total])
         context.setValues(self.function_code, inputRegisters["Epv1_today"], [self.Epv1_today])
         context.setValues(self.function_code, inputRegisters["Epv1_total"], [self.Epv1_total])
         context.setValues(self.function_code, inputRegisters["Epv2_today"], [self.Epv2_today])

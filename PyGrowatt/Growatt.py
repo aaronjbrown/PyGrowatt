@@ -2,6 +2,7 @@
 # imports for Growatt Request/Response
 # --------------------------------------------------------------------------- #
 import logging
+import time
 import struct
 
 import configparser
@@ -79,6 +80,25 @@ inputRegisters = {
     "Epv2_total": 54,
 }
 
+holdingRegisters = {
+    "wifi_serial": 0,
+    "device_serial": 30,
+    "active_rate": 77,
+    "reactive_rate": 79,
+    "power_factor": 81,
+    "p_max": 83,
+    "v_normal": 87,
+    "fw_version": 89,
+    "control_fw_version": 95,
+    "device_type": 139,
+    "year": 161,
+    "month": 163,
+    "day": 165,
+    "hour": 167,
+    "min": 169,
+    "sec": 171,
+}
+
 
 class GrowattResponse(ModbusResponse):
     def __init__(self, protocol=6, **kwargs):
@@ -126,7 +146,20 @@ class GrowattAnnounceRequest(GrowattRequest):
         GrowattRequest.__init__(self, protocol=6, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
         self.device_serial = kwargs.get('device_serial', [])
+        self.active_rate = kwargs.get('active_rate', 0)
+        self.reactive_rate = kwargs.get('reactive_rate', 0)
+        self.power_factor = kwargs.get('power_factor', 0)
+        self.p_max = kwargs.get('p_max', 0)
+        self.v_normal = kwargs.get('v_normal', 0)
+        self.fw_version = kwargs.get('fw_version', 0)
+        self.control_fw_version = kwargs.get('control_fw_version', 0)
         self.device_type = kwargs.get('device_type', [])
+        self.year = kwargs.get('year', 0)
+        self.month = kwargs.get('month', 0)
+        self.day = kwargs.get('day', 0)
+        self.hour = kwargs.get('hour', 0)
+        self.min = kwargs.get('min', 0)
+        self.sec = kwargs.get('sec', 0)
 
     def encode(self):
         log.debug("Not implemented (doing nothing)")
@@ -136,19 +169,48 @@ class GrowattAnnounceRequest(GrowattRequest):
     def decode(self, data):
         # Decrypt the data
         data = xor(data, KEY)
-        # Unpack the data.
-        # TODO: Unpack all data contained within the AnnounceRequest.
-        #  The only data we understand is the WiFi Serial, "Device" Serial, and we cah have
-        #  a guess at where the Device Type starts and ends.
-        self.wifi_serial = struct.unpack_from('>10s', data, 0)
-        self.device_serial = struct.unpack_from('>10s', data, 30)
-        self.device_type = struct.unpack_from('>16s', data, 139)
+        # Unpack the (known) data
+        self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
+        self.device_serial = struct.unpack_from('>10s', data, 30)[0]
+        self.active_rate, self.reactive_rate, self.power_factor = struct.unpack_from('>3H', data, 77)
+        self.p_max, self.v_normal = struct.unpack_from('>IH', data, 83)
+        self.fw_version, self.control_fw_version = struct.unpack_from('>6s6s', data, 89)
+        self.device_type = struct.unpack_from('>16s', data, 139)[0]
+        self.year, self.month, self.day, self.hour, self.min, self.sec = struct.unpack_from(">6H", data, 161)
         log.debug("GrowattAnnounceRequest from %s: Device ID: %s, Device Type: %s", self.wifi_serial,
                   self.device_serial, self.device_type)
         return
 
     def execute(self, context):
-        return GrowattAnnounceResponse(wifi_serial=self.wifi_serial)
+        context.setValues(self.function_code, holdingRegisters["wifi_serial"], [self.wifi_serial])
+        context.setValues(self.function_code, holdingRegisters["device_serial"], [self.device_serial])
+        context.setValues(self.function_code, holdingRegisters["active_rate"], [self.active_rate])
+        context.setValues(self.function_code, holdingRegisters["reactive_rate"], [self.reactive_rate])
+        context.setValues(self.function_code, holdingRegisters["power_factor"], [self.power_factor])
+        context.setValues(self.function_code, holdingRegisters["p_max"], [self.p_max])
+        context.setValues(self.function_code, holdingRegisters["v_normal"], [self.v_normal])
+        context.setValues(self.function_code, holdingRegisters["fw_version"], [self.fw_version])
+        context.setValues(self.function_code, holdingRegisters["control_fw_version"], [self.control_fw_version])
+        context.setValues(self.function_code, holdingRegisters["device_type"], [self.device_type])
+        context.setValues(self.function_code, holdingRegisters["year"], [self.year])
+        context.setValues(self.function_code, holdingRegisters["month"], [self.month])
+        context.setValues(self.function_code, holdingRegisters["day"], [self.day])
+        context.setValues(self.function_code, holdingRegisters["hour"], [self.hour])
+        context.setValues(self.function_code, holdingRegisters["min"], [self.min])
+        context.setValues(self.function_code, holdingRegisters["sec"], [self.sec])
+
+        # Check inverter time is within 60 seconds of local time
+        inverter_time = time.strptime("{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(self.year, self.month,
+                                                                                         self.day, self.hour,
+                                                                                         self.min, self.sec),
+                                      '%Y-%m-%dT%H:%M:%S')
+        time_delta = time.mktime(inverter_time) - time.mktime(time.localtime())
+        if abs(time_delta) > 60:
+            # Set inverter time to local time
+            return GrowattConfigResponse(wifi_serial=self.wifi_serial, config_id=0x1F,
+                                         config_value=time.strftime("%Y-%m-%d %H:%M:%S"))
+        else:
+            return GrowattAnnounceResponse(wifi_serial=self.wifi_serial)
 
 
 class GrowattEnergyResponse(GrowattResponse):

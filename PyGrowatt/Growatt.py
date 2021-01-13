@@ -7,7 +7,6 @@ import struct
 
 import configparser
 from pymodbus.pdu import ModbusRequest, ModbusResponse
-from pymodbus.utilities import hexlify_packets
 
 log = logging.getLogger()
 
@@ -539,7 +538,7 @@ class GrowattQueryRequest(GrowattRequest):
 class GrowattBufferedEnergyResponse(GrowattResponse):
     function_code = 0x50
 
-    def __init__(self, wifi_serial=None, **kwargs):
+    def __init__(self, **kwargs):
         GrowattResponse.__init__(self, protocol=6, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
 

@@ -227,6 +227,18 @@ function dissect_energy(buffer, pinfo, tree)
     tree:add(buffer(149, 2), "Vac (ST):", buffer(149, 2):uint()/10, "V")
     tree:add(buffer(151, 2), "Vac (RT):", buffer(151, 2):uint()/10, "V")
 
+    tree:add(buffer(161, 4), "Pac:", buffer(161, 4):uint()/10, "W")
+
+    local total_time = buffer(165, 4):uint()/2
+    local total_secs  = total_time%60
+    total_time = (total_time - total_secs)/60
+    local total_mins = total_time%60
+    total_time = (total_time - total_mins)/60
+    local total_hours = total_time%60
+    total_time = tree:add(buffer(165, 4), "Total Time", buffer(165, 4):uint()/2, "s")
+    local total_time_string = string.format(" (%02d:%02d:%02d)", total_hours, total_mins, total_secs)
+    total_time:append_text(total_time_string)
+
     local eac_tree = tree:add(buffer(169, 8), "Eac")
     local eac_today = buffer(169, 4):uint()/10
     local eac_total = buffer(173, 4):uint()/10

@@ -290,6 +290,13 @@ function dissect_energy(buffer, pinfo, tree)
     epv5_tree:add(buffer(217, 4), "Epv5 Total:", epv5_total, "kWH")
     local epv5_string = string.format(" (Today: %.1f kWH, Total: %.1f kWH)", epv5_today, epv5_total)
     epv5_tree:append_text(epv5_string)
+
+    local offset = 237
+    while (offset < buffer:len())
+    do
+        tree:add(buffer(offset, 2), buffer(offset, 2):uint())
+        offset = offset + 2
+    end
   end
 end
 

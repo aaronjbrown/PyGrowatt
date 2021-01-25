@@ -230,7 +230,7 @@ function dissect_energy(buffer, pinfo, tree)
     local eac_today = buffer(169, 4):uint()/10
     local eac_total = buffer(173, 4):uint()/10
     eac_tree:add(buffer(169, 4), "Today:", eac_today, "kWH")
-    eac_tree:add(buffer(173, 4), "Today:", eac_total, "kWH")
+    eac_tree:add(buffer(173, 4), "Total:", eac_total, "kWH")
     local eac_string = string.format(" (Today: %.1f kWH, Total: %.1f kWH)", eac_today, eac_total)
     eac_tree:append_text(eac_string)
 

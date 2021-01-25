@@ -32,6 +32,7 @@ local config_id_types = {
   [0x14] = "Device Type",
   [0x15] = "Software Version",
   [0x16] = "Hardware Version",
+  [0x19] = "Netmask",
   [0x1e] = "Timezone",
   [0x1f] = "Date"
 }

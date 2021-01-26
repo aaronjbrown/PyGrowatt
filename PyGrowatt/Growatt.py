@@ -10,18 +10,8 @@ from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 log = logging.getLogger()
 
-# Get the decryption key from the config file
 config = configparser.ConfigParser()
 config.read("../scripts/config.ini")
-KEY = config['Growatt']['KEY']
-
-
-def xor(data, key):
-    decrypted = ""
-    for i in range(0, len(data)):
-        decrypted += chr(ord(data[i]) ^ ord(key[i % len(key)]))
-    return decrypted
-
 
 configDescription = {
     0x04: "Update Interval",
@@ -167,8 +157,6 @@ class GrowattAnnounceRequest(GrowattRequest):
         # return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
-        # Decrypt the data
-        data = xor(data, KEY)
         # Unpack the (known) data
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
         self.device_serial = struct.unpack_from('>10s', data, 30)[0]
@@ -227,7 +215,7 @@ class GrowattEnergyResponse(GrowattResponse):
 
         :returns: Payload to ACK the message
         """
-        return struct.pack('B', 0x47)
+        return struct.pack("x")
 
     def decode(self, data):
         """ Decodes response pdu
@@ -278,8 +266,6 @@ class GrowattEnergyRequest(GrowattRequest):
         return
 
     def decode(self, data):
-        # Decrypt the data
-        data = xor(data, KEY)
         # Unpack the data.
         try:
             self.wifi_serial = struct.unpack_from(">10s", data, 0)[0]
@@ -358,8 +344,7 @@ class GrowattPingResponse(GrowattResponse):
 
         :returns: The encoded packet message
         """
-        data = struct.pack(">30s", self.wifi_serial)
-        return xor(data, KEY)
+        return struct.pack(">30s", self.wifi_serial)
 
     def decode(self, data):
         """ Decodes response pdu
@@ -383,8 +368,6 @@ class GrowattPingRequest(GrowattRequest):
         # return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
-        # Decrypt the data
-        data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
         log.debug("GrowattPingRequest from '%s'", self.wifi_serial)
         return
@@ -419,7 +402,6 @@ class GrowattConfigResponse(GrowattResponse):
                            self.config_id,
                            self.config_length,
                            self.config_value)
-        data = xor(data, KEY)
         return data
 
     def decode(self, data):
@@ -444,11 +426,8 @@ class GrowattConfigRequest(GrowattRequest):
     def encode(self):
         log.debug("Not implemented (doing nothing)")
         return
-        # return struct.pack('>HH', self.address, self.count)
 
     def decode(self, data):
-        # Decrypt the data
-        data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
         self.config_id = struct.unpack_from('>H', data, 30)[0]
 
@@ -485,7 +464,6 @@ class GrowattQueryResponse(GrowattResponse):
         else:
             data += struct.pack(">H", self.last_config)
 
-        data = xor(data, KEY)
         return data
 
     def decode(self, data):
@@ -493,11 +471,6 @@ class GrowattQueryResponse(GrowattResponse):
 
         :param data: The packet data to decode
         """
-        # TODO: This is really a "Request" as it's the server requesting config
-        #       values from <first> to <last>. Consider terminology?
-
-        # Decrypt the data
-        data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from(">10s", data, 0)[0]
         self.first_config, self.last_config = struct.unpack_from(">2H", data, 30)
 
@@ -517,8 +490,6 @@ class GrowattQueryRequest(GrowattRequest):
         return
 
     def decode(self, data):
-        # Decrypt the data
-        data = xor(data, KEY)
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
         self.config_id, self.config_length = struct.unpack_from('>HH', data, 30)
         self.config_value = struct.unpack_from(">" + str(self.config_length) + "s", data, 34)[0]
@@ -553,12 +524,9 @@ class GrowattBufferedEnergyResponse(GrowattResponse):
     def encode(self):
         """ ACK the Buffered Energy message
 
-        ACK messages are a 0x00 byte, Version 6 of the protocol XORs the
-        payload therefore returns 0x47.
-
         :returns: Payload to ACK the message
         """
-        return struct.pack('B', 0x47)
+        return struct.pack("x")
 
     def decode(self, data):
         """ Decodes response pdu
@@ -608,8 +576,6 @@ class GrowattBufferedEnergyRequest(GrowattRequest):
         return
 
     def decode(self, data):
-        # Decrypt the data
-        data = xor(data, KEY)
         # Unpack the data.
         try:
             self.wifi_serial = struct.unpack_from(">10s", data, 0)[0]

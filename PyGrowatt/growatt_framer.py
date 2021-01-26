@@ -1,6 +1,7 @@
 import struct
 
 from pymodbus.exceptions import ModbusIOException
+from pymodbus.framer import SOCKET_FRAME_HEADER
 from pymodbus.framer.socket_framer import ModbusSocketFramer
 from pymodbus.utilities import computeCRC, hexlify_packets, checkCRC
 
@@ -38,18 +39,22 @@ class GrowattV6Framer(ModbusSocketFramer):
         * The -1 is to account for the uid byte
     """
 
-    def __init__(self, decoder, client=None):
+    def __init__(self, decoder, client=None, key="Growatt"):
         """ Initializes a new instance of the framer
 
         :param decoder: The decoder factory implementation to use
         """
-        ModbusSocketFramer.__init__(self, decoder, client=None)
+        self._key = key
+        ModbusSocketFramer.__init__(self, decoder, client=client)
 
     def _process(self, callback, error=False):
         """
         Process incoming packets irrespective error condition
         """
         data = self.getRawFrame() if error else self.getFrame()
+        # data contains the function_code, then encrypted payload
+        payload = self._xor(data[1:])
+        data = data[0] + payload
         result = self.decoder.decode(data)
         if result is None:
             raise ModbusIOException("Unable to decode request")
@@ -106,6 +111,19 @@ class GrowattV6Framer(ModbusSocketFramer):
 
         :param message: The populated request/response to send
         """
-        packet = ModbusSocketFramer.buildPacket(self, message)
+        data = message.encode()
+        packet = struct.pack(SOCKET_FRAME_HEADER,
+                             message.transaction_id,
+                             message.protocol_id,
+                             len(data) + 2,
+                             message.unit_id,
+                             message.function_code)
+        packet += self._xor(data)
         packet += struct.pack("<H", computeCRC(packet))
         return packet
+
+    def _xor(self, data):
+        decrypted = ''
+        for i in range(0, len(data)):
+            decrypted += chr(ord(data[i]) ^ ord(self._key[i % len(self._key)]))
+        return decrypted

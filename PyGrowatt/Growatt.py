@@ -5,13 +5,9 @@ import logging
 import time
 import struct
 
-import configparser
 from pymodbus.pdu import ModbusRequest, ModbusResponse
 
 log = logging.getLogger()
-
-config = configparser.ConfigParser()
-config.read("../scripts/config.ini")
 
 configDescription = {
     0x04: "Update Interval",
@@ -497,18 +493,30 @@ class GrowattQueryRequest(GrowattRequest):
 
     def execute(self, context):
         context.setValues(self.function_code, self.config_id, [self.config_value])
+        try:
+            log.info("Set %s (0x%02x): %s", configDescription[self.config_id], self.config_id, self.config_value)
+        except KeyError:
+            log.error("Could not print Config Description for value 0x%02x", self.config_id)
 
-        # Set inverter settings to the value specified in the config file
-        if self.config_id == 0x04: # Update Interval
-            update_interval = str(config['Growatt']['UpdateInterval'])
-            if self.config_value != update_interval:
-                return GrowattConfigResponse(wifi_serial=self.wifi_serial, config_id=self.config_id,
-                                             config_value=update_interval)
-        elif self.config_id == 0x11: # Server IP
-            server_ip = str(config['Growatt']['ServerIP'])
-            if self.config_value != server_ip:
-                return GrowattConfigResponse(wifi_serial=self.wifi_serial, config_id=self.config_id,
-                                             config_value=server_ip)
+        try:
+            import configparser
+            config = configparser.ConfigParser()
+            # FIXME: The config file will not be in this relative directory once the package is installed.
+            config.read("../scripts/config.ini")
+
+            # Set inverter settings to the value specified in the config file
+            if self.config_id == 0x04: # Update Interval
+                update_interval = str(config['Growatt']['UpdateInterval'])
+                if self.config_value != update_interval:
+                    return GrowattConfigResponse(wifi_serial=self.wifi_serial, config_id=self.config_id,
+                                                 config_value=update_interval)
+            elif self.config_id == 0x11: # Server IP
+                server_ip = str(config['Growatt']['ServerIP'])
+                if self.config_value != server_ip:
+                    return GrowattConfigResponse(wifi_serial=self.wifi_serial, config_id=self.config_id,
+                                                 config_value=server_ip)
+        except KeyError:
+            log.error("Could not find key")
 
         # If setting is correct, ACK the query
         return GrowattQueryResponse(wifi_serial=self.wifi_serial, first_config=self.config_id)

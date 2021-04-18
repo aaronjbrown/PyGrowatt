@@ -39,7 +39,7 @@ class GrowattV6Framer(ModbusSocketFramer):
         * The -1 is to account for the uid byte
     """
 
-    def __init__(self, decoder, client=None, key="Growatt"):
+    def __init__(self, decoder, client=None, key=b'Growatt'):
         """ Initializes a new instance of the framer
 
         :param decoder: The decoder factory implementation to use
@@ -54,7 +54,7 @@ class GrowattV6Framer(ModbusSocketFramer):
         data = self.getRawFrame() if error else self.getFrame()
         # data contains the function_code, then encrypted payload
         payload = self._xor(data[1:])
-        data = data[0] + payload
+        data = bytes([data[0]]) + payload
         result = self.decoder.decode(data)
         if result is None:
             raise ModbusIOException("Unable to decode request")
@@ -123,7 +123,7 @@ class GrowattV6Framer(ModbusSocketFramer):
         return packet
 
     def _xor(self, data):
-        decrypted = ''
+        decrypted = b''
         for i in range(0, len(data)):
-            decrypted += chr(ord(data[i]) ^ ord(self._key[i % len(self._key)]))
+            decrypted += bytes([data[i] ^ self._key[i % len(self._key)]])
         return decrypted

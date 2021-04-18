@@ -6,7 +6,7 @@ Download the repository, then use [pip](https://pip.pypa.io/en/stable/) to insta
 ```bash
 git clone https://github.com/aaronjbrown/PyGrowatt.git
 cd PyGrowatt
-pip install .
+pip install  -r requirements.txt .
 ```
 
 ## Usage

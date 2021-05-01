@@ -86,7 +86,7 @@ def pv_status_upload(datastore, interval):
     return
 
 
-if __name__ == "__main__":
+def main():
     # ----------------------------------------------------------------------- #
     # load the config from file
     # ----------------------------------------------------------------------- #
@@ -151,3 +151,7 @@ if __name__ == "__main__":
     # periodically upload the data to pvoutput.org
     # ----------------------------------------------------------------------- #
     pv_status_upload(store, int(config['Pvoutput']['StatusInterval']) * 60)
+
+
+if __name__ == "__main__":
+    main()

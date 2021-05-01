@@ -299,7 +299,7 @@ class TestGrowattConfigRequest(TestCase):
         self.assertEqual(request.wifi_serial, b'ABC1D2345E')
         self.assertEqual(request.config_id, 0x1F)
         self.assertEqual(request.config_length, 0)
-        self.assertEqual(request.config_value,b'')
+        self.assertEqual(request.config_value, '')
 
     def test_execute(self):
         data = binascii.unhexlify(

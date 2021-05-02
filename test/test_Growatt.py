@@ -327,7 +327,7 @@ class TestGrowattConfigResponse(TestCase):
         response = Growatt.GrowattConfigResponse(wifi_serial=b'ABC1D2345E',
                                                  config_id=31,
                                                  config_length=19,
-                                                 config_value=b'2020-12-20 00:33:57')
+                                                 config_value='2020-12-20 00:33:57')
         data = response.encode()
 
         self.assertEqual(binascii.hexlify(_xor(data)),

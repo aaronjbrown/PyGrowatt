@@ -398,7 +398,8 @@ class GrowattConfigResponse(GrowattResponse):
                            self.wifi_serial,
                            self.config_id,
                            self.config_length,
-                           self.config_value)
+                           self.config_value.encode('UTF-8'))
+
         return data
 
     def decode(self, data):

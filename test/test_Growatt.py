@@ -131,7 +131,7 @@ class TestGrowattQueryRequest(TestCase):
         # From "2020-12-20 09/33/41.593722_0x19_192.168.1.108.dat"
         data = binascii.unhexlify(b'06302c4625464773472a7761747447726f7761747447726f7761747447726f7e61702c1f2a37')
         request.decode(_xor(data))
-        self.assertEqual(request.wifi_serial,b'ABC1D2345E')
+        self.assertEqual(request.wifi_serial, b'ABC1D2345E')
         self.assertEqual(request.config_id, 9)
         self.assertEqual(request.config_length, 4)
         self.assertEqual(request.config_value, b'XXXX')
@@ -264,7 +264,7 @@ class TestGrowattQueryResponse(TestCase):
         data = binascii.unhexlify(b'06302c4625464773472a7761747447726f7761747447726f7761747447726f68616b')
         response = Growatt.GrowattQueryResponse()
         response.decode(_xor(data))
-        self.assertEqual(response.wifi_serial,b'ABC1D2345E')
+        self.assertEqual(response.wifi_serial, b'ABC1D2345E')
         self.assertEqual(response.first_config, 0x1F)
         self.assertEqual(response.last_config, 0x1F)
 
@@ -312,7 +312,7 @@ class TestGrowattConfigRequest(TestCase):
         store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
 
         holding_register = ModbusSparseDataBlock([0] * 100)
-        store.register(0x18,b'h', holding_register)
+        store.register(0x18, b'h', holding_register)
 
         request = Growatt.GrowattConfigRequest()
         Growatt.GrowattConfigRequest.decode(request, _xor(data))

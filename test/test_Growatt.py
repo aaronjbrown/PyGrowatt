@@ -1,4 +1,5 @@
 import binascii
+import sys
 from unittest import TestCase
 
 from pymodbus.datastore import ModbusSparseDataBlock, ModbusSlaveContext
@@ -8,10 +9,18 @@ from PyGrowatt import Growatt
 
 def _xor(data):
     key = b'Growatt'
-    decrypted = b''
-    for i in range(0, len(data)):
-        decrypted += bytes([data[i] ^ key[i % len(key)]])
-    return decrypted
+    if sys.version_info[0] == 2:
+        decrypted = ''
+        for i in range(0, len(data)):
+            decrypted += chr(ord(data[i]) ^ ord(key[i % len(key)]))
+        return decrypted
+    elif sys.version_info[0] == 3:
+        decrypted = b''
+        for i in range(0, len(data)):
+            decrypted += bytes([data[i] ^ key[i % len(key)]])
+        return decrypted
+    else:
+        return data
 
 
 class TestGrowattBufferedEnergyRequest(TestCase):

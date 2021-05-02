@@ -1,4 +1,5 @@
 import struct
+import sys
 
 from pymodbus.exceptions import ModbusIOException
 from pymodbus.framer import SOCKET_FRAME_HEADER
@@ -123,7 +124,15 @@ class GrowattV6Framer(ModbusSocketFramer):
         return packet
 
     def _xor(self, data):
-        decrypted = b''
-        for i in range(0, len(data)):
-            decrypted += bytes([data[i] ^ self._key[i % len(self._key)]])
-        return decrypted
+        if sys.version_info[0] == 2:
+            decrypted = ''
+            for i in range(0, len(data)):
+                decrypted += chr(ord(data[i]) ^ ord(self._key[i % len(self._key)]))
+            return decrypted
+        elif sys.version_info[0] == 3:
+            decrypted = b''
+            for i in range(0, len(data)):
+                decrypted += bytes([data[i] ^ self._key[i % len(self._key)]])
+            return decrypted
+        else:
+            return data

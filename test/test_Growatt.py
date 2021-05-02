@@ -381,3 +381,51 @@ class TestGrowattAnnounceRequest(TestCase):
         response = request.execute(context=store)
 
         self.assertIsInstance(response, Growatt.GrowattConfigResponse)
+
+
+class TestGrowattEnergyRequest(TestCase):
+    def test_execute(self):
+        # ----------------------------------------------------------------------- #
+        # initialize the data store
+        # ----------------------------------------------------------------------- #
+        block = ModbusSparseDataBlock([0] * 100)
+        store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
+
+        request = Growatt.GrowattEnergyRequest()
+
+        request.inverter_status = 1
+        request.Ppv = 14943
+        request.Vpv1 = 1996
+        request.Ipv1 = 26
+        request.Ppv1 = 5443
+        request.Vpv2 = 3234
+        request.Ipv2 = 28
+        request.Ppv2 = 9500
+        request.Pac = 14648
+        request.Fac = 5004
+        request.Vac1 = 2459
+        request.Iac1 = 59
+        request.Pac1 = 14650
+        request.Eac_today = 43
+        request.Eac_total = 29038
+        request.Epv1_today = 17
+        request.Epv1_total = 10418
+        request.Epv2_today = 28
+        request.Epv2_total = 18620
+        
+        request.execute(store)
+
+        from PyGrowatt.Growatt import inputRegisters
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['inverter_status'], 1)[0], 1)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Ppv'], 1)[0], 14943)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Vpv1'], 3), [1996, 26, 5443])
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Vpv2'], 3), [3234, 28, 9500])
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Pac'], 1)[0], 14648)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Fac'], 1)[0], 5004)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Vac1'], 3), [2459, 59, 14650])
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Eac_today'], 1)[0], 43)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Eac_total'], 1)[0], 29038)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Epv1_today'], 1)[0], 17)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Epv1_total'], 1)[0], 10418)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Epv2_today'], 1)[0], 28)
+        self.assertEqual(store.getValues(request.function_code, inputRegisters['Epv2_total'], 1)[0], 18620)

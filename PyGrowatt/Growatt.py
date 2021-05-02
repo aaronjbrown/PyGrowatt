@@ -311,6 +311,7 @@ Epv2_today: %.1f, Epv2_total: %.1f ",
         :return: A GrowattBufferedEnergyResponse to send back to the client
         """
 
+        context.setValues(self.function_code, inputRegisters["inverter_status"], [self.inverter_status])
         context.setValues(self.function_code, inputRegisters["Ppv"], [self.Ppv])
         context.setValues(self.function_code, inputRegisters["Vpv1"], [self.Vpv1, self.Ipv1, self.Ppv1])
         context.setValues(self.function_code, inputRegisters["Vpv2"], [self.Vpv2, self.Ipv2, self.Ppv2])

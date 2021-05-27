@@ -41,6 +41,7 @@ def pv_status_upload(datastore, interval):
     """ Upload the status information to PVOutput.org throughout the day
 
     :param datastore: the ModbusDataBlock that contains the data
+    :param interval: the delay in seconds before uploading
     """
     energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
     power_generated = datastore.getValues(4, inputRegisters["Pac"], 1)[0] * 0.1

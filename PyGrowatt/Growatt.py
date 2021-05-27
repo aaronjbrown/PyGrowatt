@@ -13,13 +13,10 @@ configDescription = {
     0x04: "Update Interval",
     0x05: "Modbus Range low",
     0x06: "Modbus Range high",
-    0x07: "UNKNOWN",
     0x08: "Device Serial Number",
     0x09: "Hardware Version",
-    0x0a: "UNKNOWN",
     0x0b: "FTP credentials",
     0x0c: "DNS",
-    0x0d: "UNKNOWN",
     0x0e: "Local IP",
     0x0f: "Local Port",
     0x10: "Mac Address",
@@ -30,6 +27,7 @@ configDescription = {
     0x15: "Software Version",
     0x16: "Hardware Version",
     0x19: "Netmask",
+    0x1a: "Gateway IP",
     0x1e: "Timezone",
     0x1f: "Date"
 }
@@ -498,7 +496,7 @@ class GrowattQueryRequest(GrowattRequest):
         try:
             log.info("Set %s (0x%02x): %s", configDescription[self.config_id], self.config_id, self.config_value)
         except KeyError:
-            log.error("Could not print Config Description for value 0x%02x", self.config_id)
+            log.info("Set UNKNOWN (0x%02x): %s", self.config_id, self.config_value)
 
         try:
             import configparser

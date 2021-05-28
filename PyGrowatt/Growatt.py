@@ -112,7 +112,7 @@ class GrowattAnnounceResponse(GrowattResponse):
 
         :returns: Payload to ACK the message
         """
-        return struct.pack('B', 0x47)
+        return struct.pack('x')
 
     def decode(self, data):
         """ Decodes response pdu

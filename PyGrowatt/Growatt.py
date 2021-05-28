@@ -29,7 +29,9 @@ configDescription = {
     0x19: "Netmask",
     0x1a: "Gateway IP",
     0x1e: "Timezone",
-    0x1f: "Date"
+    0x1f: "Date",
+    0x38: "WiFi SSID",
+    0x39: "WiFi PSK"
 }
 
 inputRegisters = {

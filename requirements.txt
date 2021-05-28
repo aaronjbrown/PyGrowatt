@@ -2,3 +2,4 @@ pymodbus>=2.4.0
 dpkt>=1.9.4
 configparser>=4.0.2
 requests>=2.25.1
+paho-mqtt>=1.5.1

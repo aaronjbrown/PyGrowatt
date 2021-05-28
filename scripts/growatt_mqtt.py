@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Growatt WiFi Server
+Growatt MQTT Client
 --------------------------------------------------------------------------
 
 Based on the "Pymodbus Synchronous Server Example", the synchronous server
@@ -22,8 +22,8 @@ from PyGrowatt.growatt_framer import GrowattV6Framer
 import threading
 import configparser as configparser
 import os
-import requests
-import time
+
+import paho.mqtt.client as mqtt
 
 # --------------------------------------------------------------------------- #
 # configure the service logging
@@ -37,57 +37,55 @@ log = logging.getLogger()
 log.setLevel(logging.INFO)
 
 
-def pv_status_upload(datastore, interval):
-    """ Upload the status information to PVOutput.org throughout the day
+def publish_data(datastore, interval, client):
+    """ Publish the energy data to MQTT
 
     :param datastore: the ModbusDataBlock that contains the data
-    :param interval: the delay in seconds before uploading
+    :param interval:  the interval to publish the data
+    :param client:    the MQTT client to publish the data
     """
-    energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
-    power_generated = datastore.getValues(4, inputRegisters["Pac"], 1)[0] * 0.1
 
-    # Wait until we have data to upload
-    if energy_generated == 0 and power_generated == 0:
-        log.debug("No data to upload to PVOutput.org")
-    else:
-        headers = {
-            'X-Pvoutput-Apikey': config['Pvoutput']['Apikey'],
-            'X-Pvoutput-SystemId': config['Pvoutput']['SystemId'],
-        }
-
-        # Status Interval
-        data = {
-            'd': time.strftime('%Y%m%d'),   # Output Date
-            't': time.strftime('%H:%M'),    # Output Time
-            'v1': energy_generated,         # Energy Generation (watt hours)
-            'v2': power_generated,          # Power Generation (watts)
-            # 'v6': store.getValues(4, inputRegisters["Vpv1"], 1)[0] * 0.1, # Voltage (volts)
-            # 'c1': '2', # Cumulative Energy Flag
-            # 'n': '', # Net Flag
-        }
-        response = requests.post('https://pvoutput.org/service/r2/addstatus.jsp', headers=headers, data=data)
-
-        if response.status_code != 200:
-            log.error("Upload to PVOutput.org failed {}: {}".format(response.status_code, response.reason))
-        else:
-            log.info("Upload to PVOutput.org success! ({}Wh / {}W generated)".format(energy_generated, power_generated))
-
-        # We've consumed the energy data, so reset the store to prevent uploading duplicate data
-        if time.strftime("%H") == "00":
-            # If it's midnight, reset the whole datastore
-            datastore.reset()
-        else:
-            # It's daytime, so only reset the Input Registers
-            datastore.store['i'].reset()
+    # Publish received Energy data
+    #   NOTE: Commented entries are input registers that are not documented and thus have not been implemented. Entered
+    #   below for future expansion.
+    # client.publish("home/solar/wifi/serial", datastore.getValues(4, inputRegisters["wifi_serial"], 1)[0] * 100)
+    # client.publish("home/solar/inverter/serial", datastore.getValues(4, inputRegisters["inverter_serial"], 1)[0] * 100)
+    # client.publish("home/solar/date/year", datastore.getValues(4, inputRegisters["year"], 1)[0] * 100)
+    # client.publish("home/solar/date/month", datastore.getValues(4, inputRegisters["month"], 1)[0] * 100)
+    # client.publish("home/solar/date/day", datastore.getValues(4, inputRegisters["day"], 1)[0] * 100)
+    # client.publish("home/solar/date/hour", datastore.getValues(4, inputRegisters["hour"], 1)[0] * 100)
+    # client.publish("home/solar/date/minute", datastore.getValues(4, inputRegisters["min"], 1)[0] * 100)
+    # client.publish("home/solar/date/second", datastore.getValues(4, inputRegisters["sec"], 1)[0] * 100)
+    client.publish("home/solar/inverter/status", datastore.getValues(4, inputRegisters["inverter_status"], 1)[0] * 100)
+    client.publish("home/solar/PV/power", datastore.getValues(4, inputRegisters["Ppv"], 1)[0] * 100)
+    client.publish("home/solar/PV/energy/total", datastore.getValues(4, inputRegisters["Epv_total"], 1)[0] * 100)
+    client.publish("home/solar/PV1/voltage", datastore.getValues(4, inputRegisters["Vpv1"], 1)[0] * 100)
+    client.publish("home/solar/PV1/current", datastore.getValues(4, inputRegisters["Ipv1"], 1)[0] * 100)
+    client.publish("home/solar/PV1/power", datastore.getValues(4, inputRegisters["Ppv1"], 1)[0] * 100)
+    client.publish("home/solar/PV1/energy/today", datastore.getValues(4, inputRegisters["Epv1_today"], 1)[0] * 100)
+    client.publish("home/solar/PV1/energy/total", datastore.getValues(4, inputRegisters["Epv1_total"], 1)[0] * 100)
+    client.publish("home/solar/PV2/voltage", datastore.getValues(4, inputRegisters["Vpv2"], 1)[0] * 100)
+    client.publish("home/solar/PV2/current", datastore.getValues(4, inputRegisters["Ipv2"], 1)[0] * 100)
+    client.publish("home/solar/PV2/power", datastore.getValues(4, inputRegisters["Ppv2"], 1)[0] * 100)
+    client.publish("home/solar/PV2/energy/today", datastore.getValues(4, inputRegisters["Epv2_today"], 1)[0] * 100)
+    client.publish("home/solar/PV2/energy/total", datastore.getValues(4, inputRegisters["Epv2_total"], 1)[0] * 100)
+    client.publish("home/solar/AC/power", datastore.getValues(4, inputRegisters["Pac"], 1)[0] * 100)
+    client.publish("home/solar/AC/frequency", datastore.getValues(4, inputRegisters["Fac"], 1)[0] * 100)
+    client.publish("home/solar/AC1/voltage", datastore.getValues(4, inputRegisters["Vac1"], 1)[0] * 100)
+    client.publish("home/solar/AC1/current", datastore.getValues(4, inputRegisters["Iac1"], 1)[0] * 100)
+    client.publish("home/solar/AC1/power", datastore.getValues(4, inputRegisters["Pac1"], 1)[0] * 100)
+    # client.publish("home/solar/AC/voltage_RS", datastore.getValues(4, inputRegisters["Vac_RS"], 1)[0] * 100)
+    client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100)
+    client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] * 100)
 
     # Keep repeating
-    timer = threading.Timer(interval, pv_status_upload, args=(datastore, interval))
+    timer = threading.Timer(interval, publish_data, args=(datastore, interval, client))
     timer.start()
 
     return
 
 
-def main():
+if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # load the config from file
     # ----------------------------------------------------------------------- #
@@ -126,7 +124,7 @@ def main():
 
     # ----------------------------------------------------------------------- #
     # start the server in a separate thread so it doesn't block this thread
-    # from uploading to PVOutput.org
+    # from publishing data to MQTT
     # ----------------------------------------------------------------------- #
     server_thread = threading.Thread(target=StartTcpServer,
                                      name="ServerThread",
@@ -148,10 +146,8 @@ def main():
     server_thread.start()
 
     # ----------------------------------------------------------------------- #
-    # periodically upload the data to pvoutput.org
+    # establish connection to MQTT broker and periodically publish the data
     # ----------------------------------------------------------------------- #
-    pv_status_upload(store, int(config['Pvoutput']['StatusInterval']) * 60)
-
-
-if __name__ == "__main__":
-    main()
+    mqtt_client = mqtt.Client("Growatt MQTT")
+    mqtt_client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
+    publish_data(store, int(config['Growatt']['UpdateInterval']) * 60, mqtt_client)

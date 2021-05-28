@@ -29,7 +29,9 @@ configDescription = {
     0x19: "Netmask",
     0x1a: "Gateway IP",
     0x1e: "Timezone",
-    0x1f: "Date"
+    0x1f: "Date",
+    0x38: "WiFi SSID",
+    0x39: "WiFi PSK"
 }
 
 inputRegisters = {
@@ -110,7 +112,7 @@ class GrowattAnnounceResponse(GrowattResponse):
 
         :returns: Payload to ACK the message
         """
-        return struct.pack('B', 0x47)
+        return struct.pack('x')
 
     def decode(self, data):
         """ Decodes response pdu

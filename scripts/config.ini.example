@@ -6,3 +6,7 @@ UpdateInterval = 5
 Apikey = Your-API-Key
 SystemId = Your-System-Id
 StatusInterval = 5
+
+[MQTT]
+ServerIP = test.mosquitto.org
+ServerPort = 1883

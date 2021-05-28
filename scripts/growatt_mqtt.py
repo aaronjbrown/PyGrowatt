@@ -131,7 +131,6 @@ if __name__ == "__main__":
                                      kwargs={"context": context,
                                              "identity": identity,
                                              "address": ("", 5279),
-                                             "defer_reactor_run": False,
                                              "custom_functions": [GrowattAnnounceRequest,
                                                                   GrowattEnergyRequest,
                                                                   GrowattPingRequest,

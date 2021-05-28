@@ -79,7 +79,7 @@ def publish_data(datastore, interval, client):
     client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] * 100)
 
     # Keep repeating
-    timer = threading.Timer(interval, publish_data, args=(datastore, interval))
+    timer = threading.Timer(interval, publish_data, args=(datastore, interval, client))
     timer.start()
 
     return
@@ -148,6 +148,6 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------- #
     # establish connection to MQTT broker and periodically publish the data
     # ----------------------------------------------------------------------- #
-    client = mqtt.Client("Growatt MQTT")
-    client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
-    publish_data(store, int(config['Growatt']['UpdateInterval']) * 60, client)
+    mqtt_client = mqtt.Client("Growatt MQTT")
+    mqtt_client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
+    publish_data(store, int(config['Growatt']['UpdateInterval']) * 60, mqtt_client)

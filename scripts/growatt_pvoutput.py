@@ -36,11 +36,19 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
+# ----------------------------------------------------------------------- #
+# load the config from file
+# ----------------------------------------------------------------------- #
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+
 
 def pv_status_upload(datastore, interval):
     """ Upload the status information to PVOutput.org throughout the day
 
     :param datastore: the ModbusDataBlock that contains the data
+    :param interval: the delay in seconds before uploading
     """
     energy_generated = datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] * 100
     power_generated = datastore.getValues(4, inputRegisters["Pac"], 1)[0] * 0.1
@@ -86,13 +94,7 @@ def pv_status_upload(datastore, interval):
     return
 
 
-if __name__ == "__main__":
-    # ----------------------------------------------------------------------- #
-    # load the config from file
-    # ----------------------------------------------------------------------- #
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
+def main():
     # ----------------------------------------------------------------------- #
     # initialize the data store
     # The Holding Register is used for config data
@@ -132,7 +134,6 @@ if __name__ == "__main__":
                                      kwargs={"context": context,
                                              "identity": identity,
                                              "address": ("", 5279),
-                                             "defer_reactor_run": False,
                                              "custom_functions": [GrowattAnnounceRequest,
                                                                   GrowattEnergyRequest,
                                                                   GrowattPingRequest,
@@ -151,3 +152,7 @@ if __name__ == "__main__":
     # periodically upload the data to pvoutput.org
     # ----------------------------------------------------------------------- #
     pv_status_upload(store, int(config['Pvoutput']['StatusInterval']) * 60)
+
+
+if __name__ == "__main__":
+    main()

@@ -33,8 +33,11 @@ local config_id_types = {
   [0x15] = "Software Version",
   [0x16] = "Hardware Version",
   [0x19] = "Netmask",
+  [0x1a] = "Gateway IP",
   [0x1e] = "Timezone",
-  [0x1f] = "Date"
+  [0x1f] = "Date",
+  [0x38] = "WiFi SSID",
+  [0x39] = "WiFi PSK"
 }
 
 local inverter_status_types = {

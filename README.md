@@ -2,11 +2,22 @@
 PyGrowatt extends [PyModbus](https://github.com/riptideio/pymodbus) to implement the custom modbus protocol used by [Growatt](https://www.ginverter.com/) solar inverters with [ShineWiFi-X](https://www.ginverter.com/Monitoring/10-630.html) modules. PyGrowatt can be used to communicate with a solar inverter, decode energy data, and upload it to services such as [PVOutput](https://pvoutput.org/).
 
 ## Installation
-Download the repository, then use [pip](https://pip.pypa.io/en/stable/) to install PyGrowatt:
+### PyGrowatt Python Module
+Download the repository and use [pip](https://pip.pypa.io/en/stable/) to install PyGrowatt:
 ```bash
 git clone https://github.com/aaronjbrown/PyGrowatt.git
 cd PyGrowatt
-pip install  -r requirements.txt .
+pip install -r requirements.txt .
+```
+To install for all users on the system, run pip as root:
+```bash
+sudo pip install -r requirements.txt .
+```
+### Growatt Wireshark Dissector:
+Copy the ```Growatt.lua``` file into the [Wireshark Plugins folder](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html). For example on MacOS:
+```bash
+mkdir -p ~/.config/wireshark/plugins
+cp PyGrowatt/scripts/Growatt.lua ~/.config/wireshark/plugins
 ```
 
 ## Usage

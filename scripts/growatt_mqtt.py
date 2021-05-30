@@ -37,6 +37,13 @@ log = logging.getLogger()
 log.setLevel(logging.INFO)
 
 
+# ----------------------------------------------------------------------- #
+# load the config from file
+# ----------------------------------------------------------------------- #
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+
 def publish_data(datastore, interval, client):
     """ Publish the energy data to MQTT
 
@@ -45,6 +52,7 @@ def publish_data(datastore, interval, client):
     :param client:    the MQTT client to publish the data
     """
 
+    log.info("Publishing data to MQTT")
     # Publish received Energy data
     #   NOTE: Commented entries are input registers that are not documented and thus have not been implemented. Entered
     #   below for future expansion.
@@ -86,12 +94,6 @@ def publish_data(datastore, interval, client):
 
 
 if __name__ == "__main__":
-    # ----------------------------------------------------------------------- #
-    # load the config from file
-    # ----------------------------------------------------------------------- #
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
     # ----------------------------------------------------------------------- #
     # initialize the data store
     # The Holding Register is used for config data
@@ -149,5 +151,6 @@ if __name__ == "__main__":
     # establish connection to MQTT broker and periodically publish the data
     # ----------------------------------------------------------------------- #
     mqtt_client = mqtt.Client("Growatt MQTT")
+    log.info(f"Connecting to {config['MQTT']['ServerIP']}:{config['MQTT']['ServerPort']}")
     mqtt_client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
     publish_data(store, int(config['Growatt']['UpdateInterval']) * 60, mqtt_client)

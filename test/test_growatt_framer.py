@@ -63,9 +63,9 @@ class TestGrowattV6Framer(TestCase):
         framer = GrowattV6Framer(decoder)
 
         # Ping frame
-        message = GrowattPingResponse(wifi_serial='XGD3A1968B')
+        message = GrowattPingResponse(wifi_serial=b'XGD3A1968B')
         message.transaction_id = 2
         message.unit_id = 1
         message.protocol_id = 6
         self.assertEqual(binascii.hexlify(framer.buildPacket(message)),
-                         "00020006002001161f352b4420454d714a2d7761747447726f7761747447726f77617474477267ca")
+                         b'00020006002001161f352b4420454d714a2d7761747447726f7761747447726f77617474477267ca')

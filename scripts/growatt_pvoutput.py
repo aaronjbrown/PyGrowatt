@@ -36,6 +36,13 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
+# ----------------------------------------------------------------------- #
+# load the config from file
+# ----------------------------------------------------------------------- #
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+
 
 def pv_status_upload(datastore, interval):
     """ Upload the status information to PVOutput.org throughout the day
@@ -88,12 +95,6 @@ def pv_status_upload(datastore, interval):
 
 
 def main():
-    # ----------------------------------------------------------------------- #
-    # load the config from file
-    # ----------------------------------------------------------------------- #
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
     # ----------------------------------------------------------------------- #
     # initialize the data store
     # The Holding Register is used for config data

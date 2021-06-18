@@ -106,7 +106,7 @@ class GrowattAnnounceResponse(GrowattResponse):
     function_code = 0x03
 
     def __init__(self, **kwargs):
-        GrowattResponse.__init__(self, protocol=6, **kwargs)
+        GrowattResponse.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
         self.inverter_serial = kwargs.get('inverter_serial', [])
 
@@ -135,7 +135,7 @@ class GrowattAnnounceRequest(GrowattRequest):
     """
 
     def __init__(self, **kwargs):
-        GrowattRequest.__init__(self, protocol=6, **kwargs)
+        GrowattRequest.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
         self.device_serial = kwargs.get('device_serial', [])
         self.active_rate = kwargs.get('active_rate', 0)
@@ -207,7 +207,7 @@ class GrowattEnergyResponse(GrowattResponse):
     function_code = 0x04
 
     def __init__(self, **kwargs):
-        GrowattResponse.__init__(self, protocol=6, **kwargs)
+        GrowattResponse.__init__(self, **kwargs)
 
     def encode(self):
         """ ACK the Energy message
@@ -232,7 +232,7 @@ class GrowattEnergyRequest(GrowattRequest):
     function_code = 0x04
 
     def __init__(self, **kwargs):
-        GrowattRequest.__init__(self, protocol=6, **kwargs)
+        GrowattRequest.__init__(self, **kwargs)
         self.wifi_serial = []
         self.inverter_serial = []
         self.year = 0
@@ -339,7 +339,7 @@ class GrowattPingResponse(GrowattResponse):
     function_code = 0x16
 
     def __init__(self, **kwargs):
-        GrowattResponse.__init__(self, protocol=6, **kwargs)
+        GrowattResponse.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
 
     def encode(self):
@@ -362,7 +362,7 @@ class GrowattPingRequest(GrowattRequest):
     function_code = 0x16
 
     def __init__(self, **kwargs):
-        GrowattRequest.__init__(self, protocol=6, **kwargs)
+        GrowattRequest.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
 
     def encode(self):
@@ -389,7 +389,7 @@ class GrowattConfigResponse(GrowattResponse):
     function_code = 0x18
 
     def __init__(self, **kwargs):
-        GrowattResponse.__init__(self, protocol=6, **kwargs)
+        GrowattResponse.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
         self.config_id = kwargs.get("config_id", 0)
         self.config_value = kwargs.get("config_value", '')
@@ -421,7 +421,7 @@ class GrowattConfigRequest(GrowattRequest):
     function_code = 0x18
 
     def __init__(self, **kwargs):
-        GrowattRequest.__init__(self, protocol=6, **kwargs)
+        GrowattRequest.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
         self.config_id = kwargs.get("config_id", 0)
         self.config_value = kwargs.get("config_value", '')
@@ -450,7 +450,7 @@ class GrowattQueryResponse(GrowattResponse):
     function_code = 0x19
 
     def __init__(self, **kwargs):
-        GrowattResponse.__init__(self, protocol=6, **kwargs)
+        GrowattResponse.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
         self.first_config = kwargs.get("first_config", 0)
         self.last_config = kwargs.get("last_config", None)
@@ -483,7 +483,7 @@ class GrowattQueryRequest(GrowattRequest):
     function_code = 0x19
 
     def __init__(self, **kwargs):
-        GrowattRequest.__init__(self, protocol=6, **kwargs)
+        GrowattRequest.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
         self.config_id = kwargs.get("config_id", 0)
         self.config_value = kwargs.get("config_value", '')
@@ -534,7 +534,7 @@ class GrowattBufferedEnergyResponse(GrowattResponse):
     function_code = 0x50
 
     def __init__(self, **kwargs):
-        GrowattResponse.__init__(self, protocol=6, **kwargs)
+        GrowattResponse.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get('wifi_serial', [])
 
     def encode(self):
@@ -557,7 +557,7 @@ class GrowattBufferedEnergyRequest(GrowattRequest):
     function_code = 0x50
 
     def __init__(self, **kwargs):
-        GrowattRequest.__init__(self, protocol=6, **kwargs)
+        GrowattRequest.__init__(self, **kwargs)
         self.wifi_serial = kwargs.get("wifi_serial", [])
         self.inverter_serial = kwargs.get("inverter_serial", [])
         self.year = kwargs.get("year", 0)

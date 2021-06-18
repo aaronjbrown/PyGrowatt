@@ -79,39 +79,39 @@ function decrypt(buffer)
 end
 
 function dissect_ping(buffer, pinfo, tree)
-  tree:add(wifi_serial, buffer(0, 30), buffer(0, 30):string())
+  tree:add(wifi_serial, buffer(0, 10), buffer(0, 10):string())
 end
 
 function dissect_config(buffer, pinfo, tree)
-  tree:add(wifi_serial, buffer(0, 30), buffer(0, 30):string())
-  tree:add(config_id, buffer(30, 2), buffer(30, 2):uint())
+  tree:add(wifi_serial, buffer(0, 10), buffer(0, 10):string())
+  tree:add(config_id, buffer(10, 2), buffer(10, 2):uint())
 
-  if buffer:len() > 34 then
-    local config_len = buffer(32, 2):uint()
-    tree:add(config_length, buffer(32, 2), config_len)
-    tree:add(buffer(34, config_len), "Value:", buffer(34, config_len):string())
+  if buffer:len() > 14 then
+    local config_len = buffer(12, 2):uint()
+    tree:add(config_length, buffer(12, 2), config_len)
+    tree:add(buffer(14, config_len), "Value:", buffer(14, config_len):string())
   else
-    tree:add(buffer(32, 1), "Value:", "ACK")
+    tree:add(buffer(12, 1), "Value:", "ACK")
   end
 end
 
 function dissect_query(buffer, pinfo, tree)
 
-  tree:add(wifi_serial, buffer(0, 30), buffer(0, 30):string())
+  tree:add(wifi_serial, buffer(0, 10), buffer(0, 10):string())
 
-  if  buffer:len() == 34 then
+  if  buffer:len() == 14 then
     -- ConfigResponse
-    tree:add(config_id, buffer(30, 2), buffer(30, 2):uint())
-    tree:add(config_id, buffer(32, 2), buffer(32, 2):uint())
-  elseif buffer:len() > 34 then
+    tree:add(config_id, buffer(10, 2), buffer(10, 2):uint())
+    tree:add(config_id, buffer(12, 2), buffer(12, 2):uint())
+  elseif buffer:len() > 14 then
     -- ConfigRequest
-    tree:add(config_id, buffer(30, 2), buffer(30, 2):uint())
-    local config_len = buffer(32, 2):uint()
-    tree:add(config_length, buffer(32, 2), config_len)
-    tree:add(buffer(34, config_len), "Value:", buffer(34, config_len):string())
+    tree:add(config_id, buffer(10, 2), buffer(10, 2):uint())
+    local config_len = buffer(12, 2):uint()
+    tree:add(config_length, buffer(12, 2), config_len)
+    tree:add(buffer(14, config_len), "Value:", buffer(14, config_len):string())
   else
-    tree:add(config_id, buffer(30, 2), buffer(30, 2):uint())
-    tree:add(buffer(32, 1), "Value:", "ACK")
+    tree:add(config_id, buffer(10, 2), buffer(10, 2):uint())
+    tree:add(buffer(12, 1), "Value:", "ACK")
   end
 end
 

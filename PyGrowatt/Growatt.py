@@ -85,6 +85,12 @@ holdingRegisters = {
     "sec": 171,
 }
 
+inverter_status_description = {
+    0: "Waiting",
+    1: "Normal",
+    3: "Fault",
+}
+
 
 class GrowattResponse(ModbusResponse):
     def __init__(self, protocol=6, **kwargs):

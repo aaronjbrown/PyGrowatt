@@ -93,12 +93,12 @@ inverter_status_description = {
 
 
 class GrowattResponse(ModbusResponse):
-    def __init__(self, protocol=6, **kwargs):
+    def __init__(self, protocol=5, **kwargs):
         ModbusResponse.__init__(self, protocol=protocol, **kwargs)
 
 
 class GrowattRequest(ModbusRequest):
-    def __init__(self, protocol=6, **kwargs):
+    def __init__(self, protocol=5, **kwargs):
         ModbusRequest.__init__(self, protocol=protocol, **kwargs)
 
 
@@ -400,7 +400,7 @@ class GrowattConfigResponse(GrowattResponse):
 
         :returns: The encoded packet message
         """
-        data = struct.pack(">30sHH" + str(self.config_length) + "s",
+        data = struct.pack(">10sHH" + str(self.config_length) + "s",
                            self.wifi_serial,
                            self.config_id,
                            self.config_length,
@@ -433,12 +433,12 @@ class GrowattConfigRequest(GrowattRequest):
 
     def decode(self, data):
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
-        self.config_id = struct.unpack_from('>H', data, 30)[0]
+        self.config_id = struct.unpack_from('>H', data, 10)[0]
 
         # An ACK will have a single 0x00 byte after the configID, otherwise it has the length and value
-        if len(data) > 34:
-            self.config_length = struct.unpack_from('>H', data, 32)[0]
-            self.config_value = struct.unpack_from('>' + str(self.config_length) + 's', data, 34)[0]
+        if len(data) > 14:
+            self.config_length = struct.unpack_from('>H', data, 12)[0]
+            self.config_value = struct.unpack_from('>' + str(self.config_length) + 's', data, 14)[0]
 
         return
 
@@ -460,7 +460,7 @@ class GrowattQueryResponse(GrowattResponse):
 
         :returns: The packet data to send
         """
-        data = struct.pack(">30sH", self.wifi_serial, self.first_config)
+        data = struct.pack(">10sH", self.wifi_serial, self.first_config)
 
         # If this is an ACK, send a 0x00 payload
         if self.last_config is None:
@@ -476,7 +476,7 @@ class GrowattQueryResponse(GrowattResponse):
         :param data: The packet data to decode
         """
         self.wifi_serial = struct.unpack_from(">10s", data, 0)[0]
-        self.first_config, self.last_config = struct.unpack_from(">2H", data, 30)
+        self.first_config, self.last_config = struct.unpack_from(">2H", data, 10)
 
 
 class GrowattQueryRequest(GrowattRequest):
@@ -495,8 +495,8 @@ class GrowattQueryRequest(GrowattRequest):
 
     def decode(self, data):
         self.wifi_serial = struct.unpack_from('>10s', data, 0)[0]
-        self.config_id, self.config_length = struct.unpack_from('>HH', data, 30)
-        self.config_value = struct.unpack_from(">" + str(self.config_length) + "s", data, 34)[0]
+        self.config_id, self.config_length = struct.unpack_from('>HH', data, 10)
+        self.config_value = struct.unpack_from(">" + str(self.config_length) + "s", data, 14)[0]
         return
 
     def execute(self, context):

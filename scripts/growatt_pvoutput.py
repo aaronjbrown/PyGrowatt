@@ -145,7 +145,7 @@ def main():
                                              "allow_reuse_address": True,
                                              },
                                      )
-    server_thread.setDaemon(True)
+    server_thread.daemon = True
     server_thread.start()
 
     # ----------------------------------------------------------------------- #

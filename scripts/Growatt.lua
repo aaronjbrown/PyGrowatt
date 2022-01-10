@@ -72,7 +72,7 @@ function decrypt(buffer)
 
   for i = 0, buffer_bytes:len()-1, 1 do
     local key_bit = i % key:len()
-    decrypted_buffer:set_index(i, bit32.bxor(buffer_bytes:get_index(i), string.byte(key, key_bit+1)))
+    decrypted_buffer:set_index(i, bit.bxor(buffer_bytes:get_index(i), string.byte(key, key_bit+1)))
   end
 
   return decrypted_buffer
@@ -96,7 +96,6 @@ function dissect_config(buffer, pinfo, tree)
 end
 
 function dissect_query(buffer, pinfo, tree)
-
   tree:add(wifi_serial, buffer(0, 10), buffer(0, 10):string())
 
   if  buffer:len() == 14 then
@@ -119,7 +118,6 @@ function dissect_energy(buffer, pinfo, tree)
   if buffer:len() == 1 then
     tree:add(buffer(0, 1), "Value:", "ACK")
   else
-
     tree:add(wifi_serial, buffer(0, 30), buffer(0, 30):string())
     tree:add(device_serial, buffer(30, 30), buffer(30, 30):string())
 
@@ -297,8 +295,14 @@ function dissect_energy(buffer, pinfo, tree)
     local offset = 237
     while (offset < buffer:len())
     do
+      if offset == 271 then
+        tree:add(buffer(offset, 2), "Inverter Power Factor?", buffer(offset, 2):uint())
+      elseif offset == 273 then
+        tree:add(buffer(offset, 2), "Real Output power Percent?", buffer(offset, 2):uint())
+      else
         tree:add(buffer(offset, 2), buffer(offset, 2):uint())
-        offset = offset + 2
+      end
+      offset = offset + 2
     end
   end
 end
@@ -312,12 +316,12 @@ function dissect_announce(buffer, pinfo, tree)
   tree:add(device_serial, buffer(30, 30), buffer(30, 30):string())
 
   date_tree = tree:add(buffer(161, 12), "Inverter Date")
-  local year = bit32.band(buffer(161, 2):uint())
-  local month = bit32.band(buffer(163, 2):uint())
-  local day = bit32.band(buffer(165, 2):uint())
-  local hour = bit32.band(buffer(167, 2):uint())
-  local min = bit32.band(buffer(169, 2):uint())
-  local sec = bit32.band(buffer(171, 2):uint())
+  local year = bit.band(buffer(161, 2):uint())
+  local month = bit.band(buffer(163, 2):uint())
+  local day = bit.band(buffer(165, 2):uint())
+  local hour = bit.band(buffer(167, 2):uint())
+  local min = bit.band(buffer(169, 2):uint())
+  local sec = bit.band(buffer(171, 2):uint())
   date_tree:add(buffer(161, 2), "Year:", year)
   date_tree:add(buffer(163, 2), "Month:", month)
   date_tree:add(buffer(165, 2), "Day:", day)
@@ -325,7 +329,6 @@ function dissect_announce(buffer, pinfo, tree)
   date_tree:add(buffer(169, 2), "Minutes:", min)
   date_tree:add(buffer(171, 2), "Seconds:", sec)
   date_tree:append_text(string.format(": %02d/%02d/%02d %02d:%02d:%02d", day, month, year, hour, min, sec))
-  
 end
 
 function p_growatt.dissector(buffer, pinfo, tree)

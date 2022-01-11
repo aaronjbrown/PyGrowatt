@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pygrowatt-deployment
+  labels:
+    app: pygrowatt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pygrowatt
+  template:
+    metadata:
+      name: pygrowatt
+      labels:
+        app: pygrowatt
+    spec:
+      containers:
+      - name: pygrowatt-container
+        image: pygrowatt
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5279
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pygrowatt-service
+spec:
+  selector:
+    app: pygrowatt
+  ports:
+    - port: 5279
+      targetPort: 5279
+  type: LoadBalancer

@@ -19,6 +19,9 @@ spec:
       - name: pygrowatt-container
         image: pygrowatt
         imagePullPolicy: Never
+        env:
+          - name: TZ
+            value: Etc/GMT
         ports:
         - containerPort: 5279
           protocol: TCP

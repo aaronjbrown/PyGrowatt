@@ -33,6 +33,8 @@ docker build -t pygrowatt .
 By default, the container runs the example ```growatt_pvoutput.py``` script.
 
 ### Kubernetes Deployment _(optional)_
+At least in minikube, a pod will start with GMT time by default. To enable easy toggling for local time the TZ environment variable was added to the deployment template and can be updated with the [tz database time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for your locale. By default, it is set to Etc/GMT for compatability. 
+
 To deploy in a minikube instance:
 ```bash
 # Ensure minikube is installed

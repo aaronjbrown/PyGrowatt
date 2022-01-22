@@ -100,7 +100,7 @@ def publish_data(datastore, interval):
     return
 
 
-if __name__ == "__main__":
+def main():
     # ----------------------------------------------------------------------- #
     # initialize the data store
     # The Holding Register is used for config data
@@ -158,3 +158,7 @@ if __name__ == "__main__":
     # Periodically publish the data
     # ----------------------------------------------------------------------- #
     publish_data(store, int(config['Growatt']['UpdateInterval']) * 60)
+
+
+if __name__ == "__main__":
+    main()

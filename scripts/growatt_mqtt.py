@@ -93,6 +93,14 @@ def publish_data(datastore, interval):
     client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] / 10, retain=True)
     client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] / 10, retain=True)
 
+    # We've consumed the energy data, so reset the store to prevent uploading duplicate data
+    if time.strftime("%H") == "00":
+        # If it's midnight, reset the whole datastore
+        datastore.reset()
+    else:
+        # It's daytime, so only reset the Input Registers
+        datastore.store['i'].reset()
+
     # Keep repeating
     timer = threading.Timer(interval, publish_data, args=(datastore, interval))
     timer.start()

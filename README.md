@@ -30,7 +30,7 @@ Build a [Docker](https://www.docker.com/) container:
 ```bash
 docker build -t pygrowatt .
 ```
-By default, the container runs the example ```growatt_pvoutput.py``` script.
+By default, the container runs the example ```growatt_mqtt.py``` script.
 
 ### Kubernetes Deployment _(optional)_
 At least in minikube, a pod will start with GMT time by default. To enable easy toggling for local time the TZ environment variable was added to the deployment template and can be updated with the [tz database time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for your locale. By default, it is set to Etc/GMT for compatability. 
@@ -64,12 +64,19 @@ cp scripts/Growatt.lua ~/.config/wireshark/plugins
 ```
 
 ## Usage
+Configure the computer running this script with a staic IP and the ShineWifi-X module to communicate with that IP address, then run one of the following example scripts or create your own!
+### MQTT Example Script
+To use the example MQTT script you will need to enter your MQTT `ServerIP` and `ServerPort` in the configuration file, then execute the script:
+```bash
+cd scripts
+python growatt_mqtt.py
+```
+### PVOutput Example Script
 To use the example PVOutput script you will need to enter your `Apikey` and `SystemId` in the configuration file, then execute the script:
 ```bash
 cd scripts
-python growatt_pvoutput.py --config config.ini
+python growatt_pvoutput.py
 ```
-Finally, you need to configure the ShineWifi-X module to communicate with the computer running this script. You will also need to configure the computer running this script with a static IP address.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

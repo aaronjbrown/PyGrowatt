@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt .
 
 WORKDIR /opt/PyGrowatt/scripts
 ENTRYPOINT [ "python" ]
-CMD [ "growatt_pvoutput.py", "--config", "/opt/PyGrowatt/scripts/config.ini" ]
+CMD [ "growatt_mqtt.py" ]

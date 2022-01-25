@@ -36,7 +36,6 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-
 # ----------------------------------------------------------------------- #
 # load the config from file
 # ----------------------------------------------------------------------- #
@@ -44,57 +43,83 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 
 
-def publish_data(datastore, interval, client):
+def publish_data(datastore, interval):
     """ Publish the energy data to MQTT
 
     :param datastore: the ModbusDataBlock that contains the data
     :param interval:  the interval to publish the data
     :param client:    the MQTT client to publish the data
     """
+    # ----------------------------------------------------------------------- #
+    # establish connection to MQTT broker
+    # ----------------------------------------------------------------------- #
+    client = mqtt.Client("Growatt MQTT")
+    log.debug(f"Connecting to {config['MQTT']['ServerIP']}:{config['MQTT']['ServerPort']}")
+    client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
+    client.loop_start()
 
     log.info("Publishing data to MQTT")
     # Publish received Energy data
     #   NOTE: Commented entries are input registers that are not documented and thus have not been implemented. Entered
     #   below for future expansion.
-    # client.publish("home/solar/wifi/serial", datastore.getValues(4, inputRegisters["wifi_serial"], 1)[0])
-    # client.publish("home/solar/inverter/serial", datastore.getValues(4, inputRegisters["inverter_serial"], 1)[0])
-    # client.publish("home/solar/date/year", datastore.getValues(4, inputRegisters["year"], 1)[0])
-    # client.publish("home/solar/date/month", datastore.getValues(4, inputRegisters["month"], 1)[0])
-    # client.publish("home/solar/date/day", datastore.getValues(4, inputRegisters["day"], 1)[0])
-    # client.publish("home/solar/date/hour", datastore.getValues(4, inputRegisters["hour"], 1)[0])
-    # client.publish("home/solar/date/minute", datastore.getValues(4, inputRegisters["min"], 1)[0])
-    # client.publish("home/solar/date/second", datastore.getValues(4, inputRegisters["sec"], 1)[0])
+    # client.publish("home/solar/wifi/serial", datastore.getValues(4, inputRegisters["wifi_serial"], 1)[0], retain=True)
+    # client.publish("home/solar/inverter/serial", datastore.getValues(4, inputRegisters["inverter_serial"], 1)[0], retain=True)
+    # client.publish("home/solar/date/year", datastore.getValues(4, inputRegisters["year"], 1)[0], retain=True)
+    # client.publish("home/solar/date/month", datastore.getValues(4, inputRegisters["month"], 1)[0], retain=True)
+    # client.publish("home/solar/date/day", datastore.getValues(4, inputRegisters["day"], 1)[0], retain=True)
+    # client.publish("home/solar/date/hour", datastore.getValues(4, inputRegisters["hour"], 1)[0], retain=True)
+    # client.publish("home/solar/date/minute", datastore.getValues(4, inputRegisters["min"], 1)[0], retain=True)
+    # client.publish("home/solar/date/second", datastore.getValues(4, inputRegisters["sec"], 1)[0], retain=True)
     client.publish("home/solar/inverter/status",
-                   inverter_status_description[datastore.getValues(4, inputRegisters["inverter_status"], 1)[0]])
-    client.publish("home/solar/PV/power", datastore.getValues(4, inputRegisters["Ppv"], 1)[0] / 10)
-    client.publish("home/solar/PV/energy/total", datastore.getValues(4, inputRegisters["Epv_total"], 1)[0] / 10)
-    client.publish("home/solar/PV1/voltage", datastore.getValues(4, inputRegisters["Vpv1"], 1)[0] / 10)
-    client.publish("home/solar/PV1/current", datastore.getValues(4, inputRegisters["Ipv1"], 1)[0] / 10)
-    client.publish("home/solar/PV1/power", datastore.getValues(4, inputRegisters["Ppv1"], 1)[0] / 10)
-    client.publish("home/solar/PV1/energy/today", datastore.getValues(4, inputRegisters["Epv1_today"], 1)[0] / 10)
-    client.publish("home/solar/PV1/energy/total", datastore.getValues(4, inputRegisters["Epv1_total"], 1)[0] / 10)
-    client.publish("home/solar/PV2/voltage", datastore.getValues(4, inputRegisters["Vpv2"], 1)[0] / 10)
-    client.publish("home/solar/PV2/current", datastore.getValues(4, inputRegisters["Ipv2"], 1)[0] / 10)
-    client.publish("home/solar/PV2/power", datastore.getValues(4, inputRegisters["Ppv2"], 1)[0] / 10)
-    client.publish("home/solar/PV2/energy/today", datastore.getValues(4, inputRegisters["Epv2_today"], 1)[0] / 10)
-    client.publish("home/solar/PV2/energy/total", datastore.getValues(4, inputRegisters["Epv2_total"], 1)[0] / 10)
-    client.publish("home/solar/AC/power", datastore.getValues(4, inputRegisters["Pac"], 1)[0] / 10)
-    client.publish("home/solar/AC/frequency", datastore.getValues(4, inputRegisters["Fac"], 1)[0] / 100)
-    client.publish("home/solar/AC1/voltage", datastore.getValues(4, inputRegisters["Vac1"], 1)[0] / 10)
-    client.publish("home/solar/AC1/current", datastore.getValues(4, inputRegisters["Iac1"], 1)[0] / 10)
-    client.publish("home/solar/AC1/power", datastore.getValues(4, inputRegisters["Pac1"], 1)[0] / 10)
-    # client.publish("home/solar/AC/voltage_RS", datastore.getValues(4, inputRegisters["Vac_RS"], 1)[0] / 10)
-    client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] / 10)
-    client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] / 10)
+                   inverter_status_description[datastore.getValues(4, inputRegisters["inverter_status"], 1)[0]],
+                   retain=True)
+    client.publish("home/solar/PV/power", datastore.getValues(4, inputRegisters["Ppv"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV/energy/total", datastore.getValues(4, inputRegisters["Epv_total"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/PV1/voltage", datastore.getValues(4, inputRegisters["Vpv1"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV1/current", datastore.getValues(4, inputRegisters["Ipv1"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV1/power", datastore.getValues(4, inputRegisters["Ppv1"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV1/energy/today", datastore.getValues(4, inputRegisters["Epv1_today"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/PV1/energy/total", datastore.getValues(4, inputRegisters["Epv1_total"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/PV2/voltage", datastore.getValues(4, inputRegisters["Vpv2"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV2/current", datastore.getValues(4, inputRegisters["Ipv2"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV2/power", datastore.getValues(4, inputRegisters["Ppv2"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV2/energy/today", datastore.getValues(4, inputRegisters["Epv2_today"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/PV2/energy/total", datastore.getValues(4, inputRegisters["Epv2_total"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/AC/power", datastore.getValues(4, inputRegisters["Pac"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/AC/frequency", datastore.getValues(4, inputRegisters["Fac"], 1)[0] / 100, retain=True)
+    client.publish("home/solar/AC1/voltage", datastore.getValues(4, inputRegisters["Vac1"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/AC1/current", datastore.getValues(4, inputRegisters["Iac1"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/AC1/power", datastore.getValues(4, inputRegisters["Pac1"], 1)[0] / 10, retain=True)
+    # client.publish("home/solar/AC/voltage_RS", datastore.getValues(4, inputRegisters["Vac_RS"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] / 10,
+                   retain=True)g
+
+    client.disconnect()
+    client.loop_stop()
+
+    # We've consumed the energy data, so reset the store to prevent uploading duplicate data
+    if time.strftime("%H") == "00":
+        # If it's midnight, reset the whole datastore
+        datastore.reset()
+    else:
+        # It's daytime, so only reset the Input Registers
+        datastore.store['i'].reset()
 
     # Keep repeating
-    timer = threading.Timer(interval, publish_data, args=(datastore, interval, client))
+    timer = threading.Timer(interval, publish_data, args=(datastore, interval))
     timer.start()
 
     return
 
 
-if __name__ == "__main__":
+def main():
     # ----------------------------------------------------------------------- #
     # initialize the data store
     # The Holding Register is used for config data
@@ -145,13 +170,14 @@ if __name__ == "__main__":
                                              "allow_reuse_address": True,
                                              },
                                      )
-    server_thread.setDaemon(True)
+    server_thread.daemon = True
     server_thread.start()
 
     # ----------------------------------------------------------------------- #
-    # establish connection to MQTT broker and periodically publish the data
+    # Periodically publish the data
     # ----------------------------------------------------------------------- #
-    mqtt_client = mqtt.Client("Growatt MQTT")
-    log.info(f"Connecting to {config['MQTT']['ServerIP']}:{config['MQTT']['ServerPort']}")
-    mqtt_client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
-    publish_data(store, int(config['Growatt']['UpdateInterval']) * 60, mqtt_client)
+    publish_data(store, int(config['Growatt']['UpdateInterval']) * 60)
+
+
+if __name__ == "__main__":
+    main()

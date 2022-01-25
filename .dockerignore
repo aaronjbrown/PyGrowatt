@@ -1,0 +1,22 @@
+# Specific files
+Dockerfile
+.dockerignore
+.gitignore
+.DS_Store
+.git
+.idea
+kubernetes/
+scripts/Growatt.lua
+test/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build
+dist
+venv
+venv3
+*.egg-info/

@@ -36,7 +36,6 @@ logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-
 # ----------------------------------------------------------------------- #
 # load the config from file
 # ----------------------------------------------------------------------- #
@@ -57,6 +56,7 @@ def publish_data(datastore, interval):
     client = mqtt.Client("Growatt MQTT")
     log.debug(f"Connecting to {config['MQTT']['ServerIP']}:{config['MQTT']['ServerPort']}")
     client.connect(host=config['MQTT']['ServerIP'], port=int(config['MQTT']['ServerPort']))
+    client.loop_start()
 
     log.info("Publishing data to MQTT")
     # Publish received Energy data
@@ -71,27 +71,38 @@ def publish_data(datastore, interval):
     # client.publish("home/solar/date/minute", datastore.getValues(4, inputRegisters["min"], 1)[0], retain=True)
     # client.publish("home/solar/date/second", datastore.getValues(4, inputRegisters["sec"], 1)[0], retain=True)
     client.publish("home/solar/inverter/status",
-                   inverter_status_description[datastore.getValues(4, inputRegisters["inverter_status"], 1)[0]], retain=True)
+                   inverter_status_description[datastore.getValues(4, inputRegisters["inverter_status"], 1)[0]],
+                   retain=True)
     client.publish("home/solar/PV/power", datastore.getValues(4, inputRegisters["Ppv"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/PV/energy/total", datastore.getValues(4, inputRegisters["Epv_total"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV/energy/total", datastore.getValues(4, inputRegisters["Epv_total"], 1)[0] / 10,
+                   retain=True)
     client.publish("home/solar/PV1/voltage", datastore.getValues(4, inputRegisters["Vpv1"], 1)[0] / 10, retain=True)
     client.publish("home/solar/PV1/current", datastore.getValues(4, inputRegisters["Ipv1"], 1)[0] / 10, retain=True)
     client.publish("home/solar/PV1/power", datastore.getValues(4, inputRegisters["Ppv1"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/PV1/energy/today", datastore.getValues(4, inputRegisters["Epv1_today"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/PV1/energy/total", datastore.getValues(4, inputRegisters["Epv1_total"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV1/energy/today", datastore.getValues(4, inputRegisters["Epv1_today"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/PV1/energy/total", datastore.getValues(4, inputRegisters["Epv1_total"], 1)[0] / 10,
+                   retain=True)
     client.publish("home/solar/PV2/voltage", datastore.getValues(4, inputRegisters["Vpv2"], 1)[0] / 10, retain=True)
     client.publish("home/solar/PV2/current", datastore.getValues(4, inputRegisters["Ipv2"], 1)[0] / 10, retain=True)
     client.publish("home/solar/PV2/power", datastore.getValues(4, inputRegisters["Ppv2"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/PV2/energy/today", datastore.getValues(4, inputRegisters["Epv2_today"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/PV2/energy/total", datastore.getValues(4, inputRegisters["Epv2_total"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/PV2/energy/today", datastore.getValues(4, inputRegisters["Epv2_today"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/PV2/energy/total", datastore.getValues(4, inputRegisters["Epv2_total"], 1)[0] / 10,
+                   retain=True)
     client.publish("home/solar/AC/power", datastore.getValues(4, inputRegisters["Pac"], 1)[0] / 10, retain=True)
     client.publish("home/solar/AC/frequency", datastore.getValues(4, inputRegisters["Fac"], 1)[0] / 100, retain=True)
     client.publish("home/solar/AC1/voltage", datastore.getValues(4, inputRegisters["Vac1"], 1)[0] / 10, retain=True)
     client.publish("home/solar/AC1/current", datastore.getValues(4, inputRegisters["Iac1"], 1)[0] / 10, retain=True)
     client.publish("home/solar/AC1/power", datastore.getValues(4, inputRegisters["Pac1"], 1)[0] / 10, retain=True)
     # client.publish("home/solar/AC/voltage_RS", datastore.getValues(4, inputRegisters["Vac_RS"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] / 10, retain=True)
-    client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] / 10, retain=True)
+    client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] / 10,
+                   retain=True)
+    client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] / 10,
+                   retain=True)g
+
+    client.disconnect()
+    client.loop_stop()
 
     # We've consumed the energy data, so reset the store to prevent uploading duplicate data
     if time.strftime("%H") == "00":

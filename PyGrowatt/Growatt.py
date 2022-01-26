@@ -347,7 +347,7 @@ class GrowattPingResponse(GrowattResponse):
 
         :returns: The encoded packet message
         """
-        return struct.pack(">30s", self.wifi_serial)
+        return struct.pack(">10s", self.wifi_serial)
 
     def decode(self, data):
         """ Decodes response pdu

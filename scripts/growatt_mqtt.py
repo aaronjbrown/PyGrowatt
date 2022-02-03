@@ -99,7 +99,7 @@ def publish_data(datastore, interval):
     client.publish("home/solar/AC/energy/today", datastore.getValues(4, inputRegisters["Eac_today"], 1)[0] / 10,
                    retain=True)
     client.publish("home/solar/AC/energy/total", datastore.getValues(4, inputRegisters["Eac_total"], 1)[0] / 10,
-                   retain=True)g
+                   retain=True)
 
     client.disconnect()
     client.loop_stop()

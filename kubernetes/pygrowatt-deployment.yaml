@@ -20,7 +20,6 @@ spec:
       containers:
       - name: pygrowatt-container
         image: pygrowatt
-        imagePullPolicy: Never
         env:
           - name: TZ
             value: Etc/GMT

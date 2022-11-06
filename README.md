@@ -33,7 +33,7 @@ docker build -t pygrowatt .
 By default, the container runs the example ```growatt_mqtt.py``` script.
 
 ### Kubernetes Deployment _(optional)_
-At least in minikube, a pod will start with GMT time by default. To enable easy toggling for local time the TZ environment variable was added to the deployment template and can be updated with the [tz database time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for your locale. By default, it is set to Etc/GMT for compatability. 
+At least in minikube, a pod will start with GMT time by default. To enable easy toggling for local time the TZ environment variable was added to the deployment template and can be updated with the [tz database time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for your locale. By default, it is set to Etc/GMT for compatibility. 
 
 To deploy in a minikube instance:
 ```bash
@@ -57,14 +57,14 @@ kubectl port-forward --address 0.0.0.0 services/pygrowatt-service 5279:5279
 ```
 
 ### Growatt Wireshark Dissector _(optional)_
-Copy the ```Growatt.lua``` file into the [Wireshark Plugins folder](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html). For example on MacOS:
+Copy the ```Growatt.lua``` file into the [Wireshark Plugins folder](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html). For example on macOS:
 ```bash
 mkdir -p ~/.config/wireshark/plugins
 cp scripts/Growatt.lua ~/.config/wireshark/plugins
 ```
 
 ## Usage
-Configure the computer running this script with a staic IP and the ShineWifi-X module to communicate with that IP address, then run one of the following example scripts or create your own!
+Configure the computer running this script with a static IP and the ShineWifi-X module to communicate with that IP address, then run one of the following example scripts or create your own!
 ### MQTT Example Script
 To use the example MQTT script you will need to enter your MQTT `ServerIP` and `ServerPort` in the configuration file, then execute the script:
 ```bash

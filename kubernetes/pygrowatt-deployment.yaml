@@ -17,6 +17,13 @@ spec:
       labels:
         app: pygrowatt
     spec:
+      volumes:
+        - name: pygrowatt-config
+          secret:
+            secretName: pygrowatt-config
+            items:
+            - key: config.ini
+              path: config.ini
       containers:
       - name: pygrowatt-container
         image: pygrowatt
@@ -26,6 +33,11 @@ spec:
         ports:
         - containerPort: 5279
           protocol: TCP
+        volumeMounts:
+          - mountPath: "/opt/PyGrowatt/scripts/config.ini"
+            subPath: "config.ini"
+            name: pygrowatt-config
+            readOnly: true
 ---
 apiVersion: v1
 kind: Service
